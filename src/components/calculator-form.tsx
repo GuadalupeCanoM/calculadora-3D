@@ -1,9 +1,8 @@
 
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState, useRef } from "react";
+import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -54,7 +53,7 @@ import {
 import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
-const formSchema = z.object({
+export const formSchema = z.object({
   jobName: z.string().optional().default(""),
   currency: z.string().min(1, 'La moneda es obligatoria.').default('EUR'),
   printingTimeHours: z.coerce.number().min(0).default(0),
@@ -81,34 +80,15 @@ const formSchema = z.object({
   vatPercentage: z.coerce.number().min(0).default(0),
 });
 
-type FormData = z.infer<typeof formSchema>;
+export type FormData = z.infer<typeof formSchema>;
 
-export function CalculatorForm() {
+const STORAGE_PREFIX = 'luprintech-calc-project:';
+
+export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const printRef = useRef<HTMLDivElement>(null);
-
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: formSchema.parse({}),
-  });
-
-  useEffect(() => {
-    try {
-      const savedData = localStorage.getItem('savedProject');
-      if (savedData) {
-        const parsedData = JSON.parse(savedData);
-        // To be safe, merge with defaults in case saved data is from an older version
-        const defaultValues = formSchema.parse({});
-        form.reset({ ...defaultValues, ...parsedData });
-        toast({ title: 'Proyecto cargado', description: 'Se ha cargado tu proyecto guardado.' });
-      }
-    } catch (error) {
-      console.error("Failed to load project from localStorage", error);
-      toast({ variant: "destructive", title: 'Error al cargar', description: 'No se pudo cargar el proyecto guardado.' });
-    }
-  }, [form, toast]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -241,10 +221,19 @@ export function CalculatorForm() {
   };
 
   const handleSaveProject = () => {
+    const data = form.getValues();
+    if (!data.jobName || data.jobName.trim() === '') {
+      toast({
+        variant: "destructive",
+        title: 'Nombre Requerido',
+        description: 'Por favor, introduce un nombre para el trabajo antes de guardarlo.',
+      });
+      return;
+    }
     try {
-      const data = form.getValues();
-      localStorage.setItem('savedProject', JSON.stringify(data));
-      toast({ title: 'Proyecto guardado', description: 'Tu configuración ha sido guardada en este navegador.' });
+      const key = `${STORAGE_PREFIX}${data.jobName}`;
+      localStorage.setItem(key, JSON.stringify(data));
+      toast({ title: 'Proyecto guardado', description: `El proyecto "${data.jobName}" ha sido guardado.` });
     } catch (error) {
       console.error("Failed to save project to localStorage", error);
       toast({ variant: "destructive", title: 'Error al guardar', description: 'No se pudo guardar el proyecto.' });
