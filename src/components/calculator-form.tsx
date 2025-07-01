@@ -105,11 +105,19 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
     filamentWeight, spoolWeight, spoolPrice,
     powerConsumptionWatts, energyCostKwh,
     prepTime, prepCostPerHour, postProcessingTimeInMinutes, postProcessingCostPerHour,
-    includeMachineCosts, repairCost, otherCosts,
+    includeMachineCosts, printerCost, investmentReturnYears, repairCost, otherCosts,
     profitPercentage, vatPercentage, projectImage
   } = watchedValues;
 
   const totalPrintingTimeHours = (printingTimeHours || 0) + ((printingTimeMinutes || 0) / 60);
+
+  let amortizationForJob = 0;
+  if (investmentReturnYears > 0 && printerCost > 0) {
+    // Assuming 8 hours of usage per day, 365 days a year.
+    const machineHourlyRate = printerCost / (investmentReturnYears * 365 * 8);
+    amortizationForJob = machineHourlyRate * totalPrintingTimeHours;
+  }
+  
   const electricityCost = totalPrintingTimeHours > 0 && powerConsumptionWatts > 0 && energyCostKwh > 0
     ? (powerConsumptionWatts / 1000) * totalPrintingTimeHours * energyCostKwh
     : 0;
@@ -118,7 +126,7 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const totalPostProcessingTimeHours = (postProcessingTimeInMinutes || 0) / 60;
   const postProcessingCost = totalPostProcessingTimeHours * postProcessingCostPerHour;
   const laborCost = prepCost + postProcessingCost;
-  const currentMachineCost = includeMachineCosts ? repairCost : 0;
+  const currentMachineCost = includeMachineCosts ? (amortizationForJob + repairCost) : 0;
   const otherCostsTotal = otherCosts.reduce((acc, cost) => acc + (cost.price || 0), 0);
   const subTotal = filamentCost + electricityCost + laborCost + currentMachineCost + otherCostsTotal;
   const profitAmount = subTotal * (profitPercentage / 100);
