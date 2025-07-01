@@ -67,7 +67,8 @@ const formSchema = z.object({
   energyCostKwh: z.coerce.number().min(0).default(0),
   prepTime: z.coerce.number().min(0).default(0),
   prepCostPerHour: z.coerce.number().min(0).default(30),
-  postProcessingTime: z.coerce.number().min(0).default(0),
+  postProcessingTimeHours: z.coerce.number().min(0).default(0),
+  postProcessingTimeMinutes: z.coerce.number().min(0).default(0),
   postProcessingCostPerHour: z.coerce.number().min(0).default(30),
   includeMachineCosts: z.boolean().default(false),
   printerCost: z.coerce.number().min(0).default(0),
@@ -118,7 +119,7 @@ export function CalculatorForm() {
     printingTimeHours, printingTimeMinutes,
     filamentWeight, spoolWeight, spoolPrice,
     powerConsumptionWatts, energyCostKwh,
-    prepTime, prepCostPerHour, postProcessingTime, postProcessingCostPerHour,
+    prepTime, prepCostPerHour, postProcessingTimeHours, postProcessingTimeMinutes, postProcessingCostPerHour,
     includeMachineCosts, repairCost, otherCosts,
     profitPercentage, vatPercentage,
   } = watchedValues;
@@ -129,7 +130,8 @@ export function CalculatorForm() {
     : 0;
   const filamentCost = spoolWeight > 0 ? (filamentWeight / spoolWeight) * spoolPrice : 0;
   const prepCost = (prepTime / 60) * prepCostPerHour;
-  const postProcessingCost = (postProcessingTime / 60) * postProcessingCostPerHour;
+  const totalPostProcessingTimeHours = (postProcessingTimeHours || 0) + ((postProcessingTimeMinutes || 0) / 60);
+  const postProcessingCost = totalPostProcessingTimeHours * postProcessingCostPerHour;
   const laborCost = prepCost + postProcessingCost;
   const currentMachineCost = includeMachineCosts ? repairCost : 0;
   const otherCostsTotal = otherCosts.reduce((acc, cost) => acc + (cost.price || 0), 0);
@@ -457,7 +459,43 @@ export function CalculatorForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="prepTime" render={({ field }) => (<FormItem><FormLabel>Tiempo de Preparación (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                         <FormField control={form.control} name="prepCostPerHour" render={({ field }) => (<FormItem><FormLabel>Coste de Preparación/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                        <FormField control={form.control} name="postProcessingTime" render={({ field }) => (<FormItem><FormLabel>Tiempo de Post-procesamiento (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                        
+                        <div className="space-y-2">
+                          <FormLabel>Tiempo de Post-procesamiento</FormLabel>
+                          <div className="flex items-center gap-2">
+                              <FormField
+                                  control={form.control}
+                                  name="postProcessingTimeHours"
+                                  render={({ field }) => (
+                                      <FormItem className="w-full">
+                                          <FormControl>
+                                              <div className="relative">
+                                                  <Input type="number" placeholder="Horas" className="pr-8" {...field} />
+                                                  <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground text-sm pointer-events-none">h</span>
+                                              </div>
+                                          </FormControl>
+                                          <FormMessage />
+                                      </FormItem>
+                                  )}
+                              />
+                              <FormField
+                                  control={form.control}
+                                  name="postProcessingTimeMinutes"
+                                  render={({ field }) => (
+                                      <FormItem className="w-full">
+                                          <FormControl>
+                                              <div className="relative">
+                                                  <Input type="number" placeholder="Minutos" className="pr-8" {...field} />
+                                                  <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground text-sm pointer-events-none">m</span>
+                                              </div>
+                                          </FormControl>
+                                          <FormMessage />
+                                      </FormItem>
+                                  )}
+                              />
+                          </div>
+                        </div>
+
                         <FormField control={form.control} name="postProcessingCostPerHour" render={({ field }) => (<FormItem><FormLabel>Coste de Post-procesamiento/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                     </div>
                     <Separator className="my-6" />
