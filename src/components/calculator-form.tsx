@@ -61,7 +61,7 @@ const formSchema = z.object({
   printingTimeMinutes: z.coerce.number().min(0).default(0),
   filamentWeight: z.coerce.number().min(0).default(0),
   filamentType: z.string().optional(),
-  spoolPrice: z.coerce.number().min(0).default(50),
+  spoolPrice: z.coerce.number().min(0).default(20),
   spoolWeight: z.coerce.number().min(1, "El peso de la bobina debe ser mayor que 0").default(1000),
   powerConsumptionWatts: z.coerce.number().min(0).default(0),
   energyCostKwh: z.coerce.number().min(0).default(0),
