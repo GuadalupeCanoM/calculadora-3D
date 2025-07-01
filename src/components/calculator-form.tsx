@@ -55,7 +55,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 const formSchema = z.object({
   jobName: z.string().optional(),
   currency: z.string().min(1, 'La moneda es obligatoria.').default('EUR'),
-  printingTime: z.coerce.number().min(0).default(0),
+  printingTimeHours: z.coerce.number().min(0).default(0),
+  printingTimeMinutes: z.coerce.number().min(0).default(0),
   filamentWeight: z.coerce.number().min(0).default(0),
   filamentType: z.string().optional(),
   spoolPrice: z.coerce.number().min(0).default(50),
@@ -136,7 +137,11 @@ export function CalculatorForm() {
         description: result.error,
       });
     } else if (result.data) {
-      form.setValue('printingTime', Math.round(result.data.printingTimeSeconds / 60));
+      const totalMinutes = Math.round(result.data.printingTimeSeconds / 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      form.setValue('printingTimeHours', hours);
+      form.setValue('printingTimeMinutes', minutes);
       form.setValue('filamentWeight', parseFloat(result.data.filamentWeightGrams.toFixed(2)));
       toast({
         title: "Análisis Completado",
@@ -262,16 +267,40 @@ export function CalculatorForm() {
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="printingTime" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Clock size={16}/> Tiempo de Impresión (minutos)</FormLabel>
-                        <FormControl><Input type="number" {...field} /></FormControl>
-                      </FormItem>
-                    )} />
+                    <div className="space-y-2">
+                        <FormLabel className="flex items-center gap-2"><Clock size={16}/> Tiempo de Impresión</FormLabel>
+                        <div className="flex items-center gap-2">
+                            <FormField
+                                control={form.control}
+                                name="printingTimeHours"
+                                render={({ field }) => (
+                                    <FormItem className="w-full">
+                                        <FormControl>
+                                            <Input type="number" placeholder="Horas" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="printingTimeMinutes"
+                                render={({ field }) => (
+                                    <FormItem className="w-full">
+                                        <FormControl>
+                                            <Input type="number" placeholder="Minutos" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
                     <FormField control={form.control} name="filamentWeight" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><Weight size={16}/> Peso del Filamento (gramos)</FormLabel>
                         <FormControl><Input type="number" {...field} /></FormControl>
+                        <FormMessage />
                       </FormItem>
                     )} />
                   </div>
