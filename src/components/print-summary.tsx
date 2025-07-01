@@ -51,12 +51,12 @@ export const PrintSummary = React.forwardRef<HTMLDivElement, PrintSummaryProps>(
 
         <div className="grid grid-cols-1 gap-6">
           <Card>
-            <CardHeader><CardTitle>Desglose de Costos</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Desglose de Costes</CardTitle></CardHeader>
             <CardContent className="space-y-4 text-base">
-              <div className="flex justify-between"><span>Costo de Filamento</span> <strong>{formatCurrency(calculations.filamentCost)}</strong></div>
-              <div className="flex justify-between"><span>Costo de Mano de Obra</span> <strong>{formatCurrency(calculations.laborCost)}</strong></div>
-              {values.includeMaintenance && <div className="flex justify-between"><span>Costo de Mantenimiento</span> <strong>{formatCurrency(values.maintenanceCost || 0)}</strong></div>}
-              <div className="flex justify-between"><span>Otros Costos</span> <strong>{formatCurrency(calculations.otherCostsTotal)}</strong></div>
+              <div className="flex justify-between"><span>Coste de Filamento</span> <strong>{formatCurrency(calculations.filamentCost)}</strong></div>
+              <div className="flex justify-between"><span>Coste de Mano de Obra</span> <strong>{formatCurrency(calculations.laborCost)}</strong></div>
+              {values.includeMaintenance && <div className="flex justify-between"><span>Coste de Mantenimiento</span> <strong>{formatCurrency(values.maintenanceCost || 0)}</strong></div>}
+              <div className="flex justify-between"><span>Otros Costes</span> <strong>{formatCurrency(calculations.otherCostsTotal)}</strong></div>
               <Separator />
               <div className="flex justify-between font-bold text-lg"><span>Sub-total</span> <strong>{formatCurrency(calculations.subTotal)}</strong></div>
             </CardContent>

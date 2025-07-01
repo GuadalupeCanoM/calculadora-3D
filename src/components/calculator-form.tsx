@@ -176,9 +176,9 @@ export function CalculatorForm() {
     const summaryText = `
     Trabajo de Impresión 3D: ${watchedValues.jobName || 'Sin título'}
     ---
-    Costo de Filamento: ${formatCurrency(calculations.filamentCost)}
-    Costo de Mano de Obra: ${formatCurrency(calculations.laborCost)}
-    Otros Costos: ${formatCurrency(calculations.otherCostsTotal + (watchedValues.includeMaintenance ? watchedValues.maintenanceCost : 0))}
+    Coste de Filamento: ${formatCurrency(calculations.filamentCost)}
+    Coste de Mano de Obra: ${formatCurrency(calculations.laborCost)}
+    Otros Costes: ${formatCurrency(calculations.otherCostsTotal + (watchedValues.includeMaintenance ? watchedValues.maintenanceCost : 0))}
     ---
     Sub-total: ${formatCurrency(calculations.subTotal)}
     Beneficio (${watchedValues.profitPercentage}%): ${formatCurrency(calculations.profitAmount)}
@@ -190,7 +190,7 @@ export function CalculatorForm() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Resumen de Costo de Impresión 3D',
+          title: 'Resumen de Coste de Impresión 3D',
           text: summaryText,
         });
       } catch (error) {
@@ -319,8 +319,8 @@ export function CalculatorForm() {
             <AccordionItem value="filament-costs" className="border-b-0">
               <AccordionTrigger className="p-6 hover:no-underline">
                 <div className="text-left">
-                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><Palette className="text-primary"/> Costos de Filamento</CardTitle>
-                  <CardDescription>Proporciona detalles sobre la bobina de filamento para calcular los costos de material.</CardDescription>
+                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><Palette className="text-primary"/> Costes de Filamento</CardTitle>
+                  <CardDescription>Proporciona detalles sobre la bobina de filamento para calcular los costes de material.</CardDescription>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="p-6 pt-0">
@@ -343,18 +343,18 @@ export function CalculatorForm() {
             <AccordionItem value="labor-costs" className="border-b-0">
               <AccordionTrigger className="p-6 hover:no-underline">
                 <div className="text-left">
-                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><Wrench className="text-primary"/> Mano de Obra, Mantenimiento y Otros Costos</CardTitle>
+                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><Wrench className="text-primary"/> Mano de Obra, Mantenimiento y Otros Costes</CardTitle>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="p-6 pt-0">
                 <div className="space-y-6">
                   <div>
-                    <h3 className="font-semibold mb-2">Costos de Mano de Obra</h3>
+                    <h3 className="font-semibold mb-2">Costes de Mano de Obra</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="prepTime" render={({ field }) => (<FormItem><FormLabel>Tiempo de Preparación (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                        <FormField control={form.control} name="prepCostPerHour" render={({ field }) => (<FormItem><FormLabel>Costo de Preparación/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                        <FormField control={form.control} name="prepCostPerHour" render={({ field }) => (<FormItem><FormLabel>Coste de Preparación/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                         <FormField control={form.control} name="postProcessingTime" render={({ field }) => (<FormItem><FormLabel>Tiempo de Post-procesamiento (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                        <FormField control={form.control} name="postProcessingCostPerHour" render={({ field }) => (<FormItem><FormLabel>Costo de Post-procesamiento/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                        <FormField control={form.control} name="postProcessingCostPerHour" render={({ field }) => (<FormItem><FormLabel>Coste de Post-procesamiento/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                     </div>
                   </div>
                   <Separator/>
@@ -363,21 +363,21 @@ export function CalculatorForm() {
                       <FormField control={form.control} name="includeMaintenance" render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                               <div className="space-y-0.5">
-                                  <FormLabel>¿Incluir Costos de Mantenimiento?</FormLabel>
-                                  <FormDescription>Activa para añadir costos opcionales de la máquina.</FormDescription>
+                                  <FormLabel>¿Incluir Costes de Mantenimiento?</FormLabel>
+                                  <FormDescription>Activa para añadir costes opcionales de la máquina.</FormDescription>
                               </div>
                               <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                           </FormItem>
                       )} />
                       {watchedValues.includeMaintenance && (
                           <FormField control={form.control} name="maintenanceCost" render={({ field }) => (
-                          <FormItem className="mt-4"><FormLabel>Costo de Mantenimiento</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
+                          <FormItem className="mt-4"><FormLabel>Coste de Mantenimiento</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
                           )} />
                       )}
                   </div>
                   <Separator/>
                   <div>
-                    <h3 className="font-semibold mb-2">Otros Costos</h3>
+                    <h3 className="font-semibold mb-2">Otros Costes</h3>
                       {fields.map((field, index) => (
                           <div key={field.id} className="flex items-end gap-2 mb-2">
                           <FormField control={form.control} name={`otherCosts.${index}.name`} render={({ field }) => (<FormItem className="flex-grow"><FormLabel className={index > 0 ? 'sr-only' : ''}>Nombre del Artículo</FormLabel><FormControl><Input placeholder="Ej: Tornillos, Imanes" {...field} /></FormControl></FormItem>)} />
@@ -385,7 +385,7 @@ export function CalculatorForm() {
                           <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-destructive"><Trash2 size={16} /></Button>
                           </div>
                       ))}
-                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', price: 0 })} className="mt-2"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Línea de Costo</Button>
+                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', price: 0 })} className="mt-2"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Línea de Coste</Button>
                   </div>
                 </div>
               </AccordionContent>

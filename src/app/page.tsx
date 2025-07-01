@@ -9,7 +9,7 @@ export default function Home() {
             Calculadora de Luprintech
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground">
-            Tu asistente amigable para calcular los costos de impresión 3D con precisión. Sube tu G-code para un análisis instantáneo.
+            Tu asistente amigable para calcular los costes de impresión 3D con precisión. Sube tu G-code para un análisis instantáneo.
           </p>
         </header>
         <CalculatorForm />
