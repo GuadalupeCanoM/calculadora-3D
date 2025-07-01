@@ -325,11 +325,32 @@ export function CalculatorForm() {
               </AccordionTrigger>
               <AccordionContent className="p-6 pt-0">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField control={form.control} name="filamentType" render={({ field }) => (
-                      <FormItem><FormLabel>Tipo de Filamento</FormLabel><FormControl><Input placeholder="Ej: PLA, PETG, ABS" {...field} /></FormControl></FormItem>
-                  )} />
+                  <FormField
+                    control={form.control}
+                    name="filamentType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo de Filamento</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona un tipo" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="PLA">PLA</SelectItem>
+                            <SelectItem value="PETG">PETG</SelectItem>
+                            <SelectItem value="ASA">ASA</SelectItem>
+                            <SelectItem value="ABS">ABS</SelectItem>
+                            <SelectItem value="OTROS">OTROS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField control={form.control} name="spoolPrice" render={({ field }) => (
-                      <FormItem><FormLabel>Precio de la Bobina</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
+                      <FormItem><FormLabel>Precio de la Bobina</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="spoolWeight" render={({ field }) => (
                       <FormItem><FormLabel>Peso de la Bobina (gramos)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>
