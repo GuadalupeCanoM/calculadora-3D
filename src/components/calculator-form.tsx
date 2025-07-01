@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef } from "react";
@@ -21,7 +22,6 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
@@ -48,9 +48,8 @@ import {
   Palette,
   DollarSign,
   Wrench,
-  Package,
 } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 const formSchema = z.object({
@@ -204,170 +203,193 @@ export function CalculatorForm() {
   return (
     <TooltipProvider>
     <Form {...form}>
-      <form className="space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center gap-2"><FileText className="text-primary"/> Detalles del Trabajo</CardTitle>
-            <CardDescription>Comienza definiendo tu trabajo y subiendo tu G-code para un análisis automático.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <FormField control={form.control} name="jobName" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre del Trabajo</FormLabel>
-                  <FormControl><Input placeholder="Ej: Benchy, Litofanía, etc." {...field} /></FormControl>
-                </FormItem>
-              )} />
-              <FormField
-                control={form.control}
-                name="currency"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Moneda</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona una moneda" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="EUR">Euro (€)</SelectItem>
-                        <SelectItem value="USD">Dólar ($)</SelectItem>
-                        <SelectItem value="GBP">Libra (£)</SelectItem>
-                        <SelectItem value="JPY">Yen (¥)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div>
-              <FormLabel>Análisis de G-code</FormLabel>
-              <div className="mt-2">
-                <input type="file" ref={fileInputRef} onChange={handleGcodeAnalyze} accept=".gcode" className="hidden" />
-                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAnalyzing}>
-                  {isAnalyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
-                  {isAnalyzing ? 'Analizando...' : 'Subir G-code'}
-                </Button>
-                <p className="text-sm text-muted-foreground mt-2">Sube tu archivo G-code para rellenar automáticamente el tiempo de impresión y el peso del filamento.</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="printingTime" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><Clock size={16}/> Tiempo de Impresión (minutos)</FormLabel>
-                  <FormControl><Input type="number" {...field} /></FormControl>
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="filamentWeight" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><Weight size={16}/> Peso del Filamento (gramos)</FormLabel>
-                  <FormControl><Input type="number" {...field} /></FormControl>
-                </FormItem>
-              )} />
-            </div>
-          </CardContent>
-        </Card>
+      <form className="space-y-4">
+        <Accordion 
+          type="multiple" 
+          className="w-full space-y-4"
+          defaultValue={['job-details', 'filament-costs', 'labor-costs', 'final-price']}
+        >
+          <Card>
+            <AccordionItem value="job-details" className="border-b-0">
+              <AccordionTrigger className="p-6 hover:no-underline">
+                <div className="text-left">
+                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><FileText className="text-primary"/> Detalles del Trabajo</CardTitle>
+                  <CardDescription>Comienza definiendo tu trabajo y subiendo tu G-code para un análisis automático.</CardDescription>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="p-6 pt-0">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <FormField control={form.control} name="jobName" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre del Trabajo</FormLabel>
+                        <FormControl><Input placeholder="Ej: Benchy, Litofanía, etc." {...field} /></FormControl>
+                      </FormItem>
+                    )} />
+                    <FormField
+                      control={form.control}
+                      name="currency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Moneda</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una moneda" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="EUR">Euro (€)</SelectItem>
+                              <SelectItem value="USD">Dólar ($)</SelectItem>
+                              <SelectItem value="GBP">Libra (£)</SelectItem>
+                              <SelectItem value="JPY">Yen (¥)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div>
+                    <FormLabel>Análisis de G-code</FormLabel>
+                    <div className="mt-2">
+                      <input type="file" ref={fileInputRef} onChange={handleGcodeAnalyze} accept=".gcode" className="hidden" />
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAnalyzing}>
+                        {isAnalyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
+                        {isAnalyzing ? 'Analizando...' : 'Subir G-code'}
+                      </Button>
+                      <p className="text-sm text-muted-foreground mt-2">Sube tu archivo G-code para rellenar automáticamente el tiempo de impresión y el peso del filamento.</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="printingTime" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Clock size={16}/> Tiempo de Impresión (minutos)</FormLabel>
+                        <FormControl><Input type="number" {...field} /></FormControl>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="filamentWeight" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Weight size={16}/> Peso del Filamento (gramos)</FormLabel>
+                        <FormControl><Input type="number" {...field} /></FormControl>
+                      </FormItem>
+                    )} />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Card>
 
-        <Card>
-          <CardHeader>
-             <CardTitle className="font-headline text-2xl flex items-center gap-2"><Palette className="text-primary"/> Costos de Filamento</CardTitle>
-            <CardDescription>Proporciona detalles sobre la bobina de filamento para calcular los costos de material.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField control={form.control} name="filamentType" render={({ field }) => (
-                <FormItem><FormLabel>Tipo de Filamento</FormLabel><FormControl><Input placeholder="Ej: PLA, PETG, ABS" {...field} /></FormControl></FormItem>
-            )} />
-            <FormField control={form.control} name="spoolPrice" render={({ field }) => (
-                <FormItem><FormLabel>Precio de la Bobina</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
-            )} />
-            <FormField control={form.control} name="spoolWeight" render={({ field }) => (
-                <FormItem><FormLabel>Peso de la Bobina (gramos)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>
-            )} />
-          </CardContent>
-        </Card>
+          <Card>
+            <AccordionItem value="filament-costs" className="border-b-0">
+              <AccordionTrigger className="p-6 hover:no-underline">
+                <div className="text-left">
+                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><Palette className="text-primary"/> Costos de Filamento</CardTitle>
+                  <CardDescription>Proporciona detalles sobre la bobina de filamento para calcular los costos de material.</CardDescription>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="p-6 pt-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField control={form.control} name="filamentType" render={({ field }) => (
+                      <FormItem><FormLabel>Tipo de Filamento</FormLabel><FormControl><Input placeholder="Ej: PLA, PETG, ABS" {...field} /></FormControl></FormItem>
+                  )} />
+                  <FormField control={form.control} name="spoolPrice" render={({ field }) => (
+                      <FormItem><FormLabel>Precio de la Bobina</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
+                  )} />
+                  <FormField control={form.control} name="spoolWeight" render={({ field }) => (
+                      <FormItem><FormLabel>Peso de la Bobina (gramos)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>
+                  )} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Card>
 
-        <Accordion type="multiple" className="w-full space-y-4">
-            <Card>
-                <AccordionItem value="labor" className="border-b-0">
-                    <AccordionTrigger className="p-6">
-                        <CardTitle className="font-headline text-2xl flex items-center gap-2"><Wrench className="text-primary"/> Mano de Obra, Mantenimiento y Otros Costos</CardTitle>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-6 pt-0">
-                    <div className="space-y-6">
-                        <div>
-                        <h3 className="font-semibold mb-2">Costos de Mano de Obra</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField control={form.control} name="prepTime" render={({ field }) => (<FormItem><FormLabel>Tiempo de Preparación (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                            <FormField control={form.control} name="prepCostPerHour" render={({ field }) => (<FormItem><FormLabel>Costo de Preparación/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                            <FormField control={form.control} name="postProcessingTime" render={({ field }) => (<FormItem><FormLabel>Tiempo de Post-procesamiento (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                            <FormField control={form.control} name="postProcessingCostPerHour" render={({ field }) => (<FormItem><FormLabel>Costo de Post-procesamiento/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                        </div>
-                        </div>
-
-                        <Separator/>
-                        
-                        <div>
-                            <h3 className="font-semibold mb-2">Máquina y Mantenimiento</h3>
-                            <FormField control={form.control} name="includeMaintenance" render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                    <div className="space-y-0.5">
-                                        <FormLabel>¿Incluir Costos de Mantenimiento?</FormLabel>
-                                        <FormDescription>Activa para añadir costos opcionales de la máquina.</FormDescription>
-                                    </div>
-                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                </FormItem>
-                            )} />
-                            {watchedValues.includeMaintenance && (
-                                <FormField control={form.control} name="maintenanceCost" render={({ field }) => (
-                                <FormItem className="mt-4"><FormLabel>Costo de Mantenimiento</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
-                                )} />
-                            )}
-                        </div>
-
-                        <Separator/>
-                        <div>
-                        <h3 className="font-semibold mb-2">Otros Costos</h3>
-                            {fields.map((field, index) => (
-                                <div key={field.id} className="flex items-end gap-2 mb-2">
-                                <FormField control={form.control} name={`otherCosts.${index}.name`} render={({ field }) => (<FormItem className="flex-grow"><FormLabel className={index > 0 ? 'sr-only' : ''}>Nombre del Artículo</FormLabel><FormControl><Input placeholder="Ej: Tornillos, Imanes" {...field} /></FormControl></FormItem>)} />
-                                <FormField control={form.control} name={`otherCosts.${index}.price`} render={({ field }) => (<FormItem><FormLabel className={index > 0 ? 'sr-only' : ''}>Precio</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-destructive"><Trash2 size={16} /></Button>
-                                </div>
-                            ))}
-                            <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', price: 0 })} className="mt-2"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Línea de Costo</Button>
+          <Card>
+            <AccordionItem value="labor-costs" className="border-b-0">
+              <AccordionTrigger className="p-6 hover:no-underline">
+                <div className="text-left">
+                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><Wrench className="text-primary"/> Mano de Obra, Mantenimiento y Otros Costos</CardTitle>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="p-6 pt-0">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold mb-2">Costos de Mano de Obra</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name="prepTime" render={({ field }) => (<FormItem><FormLabel>Tiempo de Preparación (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                        <FormField control={form.control} name="prepCostPerHour" render={({ field }) => (<FormItem><FormLabel>Costo de Preparación/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                        <FormField control={form.control} name="postProcessingTime" render={({ field }) => (<FormItem><FormLabel>Tiempo de Post-procesamiento (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                        <FormField control={form.control} name="postProcessingCostPerHour" render={({ field }) => (<FormItem><FormLabel>Costo de Post-procesamiento/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                    </div>
+                  </div>
+                  <Separator/>
+                  <div>
+                      <h3 className="font-semibold mb-2">Máquina y Mantenimiento</h3>
+                      <FormField control={form.control} name="includeMaintenance" render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                  <FormLabel>¿Incluir Costos de Mantenimiento?</FormLabel>
+                                  <FormDescription>Activa para añadir costos opcionales de la máquina.</FormDescription>
+                              </div>
+                              <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                          </FormItem>
+                      )} />
+                      {watchedValues.includeMaintenance && (
+                          <FormField control={form.control} name="maintenanceCost" render={({ field }) => (
+                          <FormItem className="mt-4"><FormLabel>Costo de Mantenimiento</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
+                          )} />
+                      )}
+                  </div>
+                  <Separator/>
+                  <div>
+                    <h3 className="font-semibold mb-2">Otros Costos</h3>
+                      {fields.map((field, index) => (
+                          <div key={field.id} className="flex items-end gap-2 mb-2">
+                          <FormField control={form.control} name={`otherCosts.${index}.name`} render={({ field }) => (<FormItem className="flex-grow"><FormLabel className={index > 0 ? 'sr-only' : ''}>Nombre del Artículo</FormLabel><FormControl><Input placeholder="Ej: Tornillos, Imanes" {...field} /></FormControl></FormItem>)} />
+                          <FormField control={form.control} name={`otherCosts.${index}.price`} render={({ field }) => (<FormItem><FormLabel className={index > 0 ? 'sr-only' : ''}>Precio</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-destructive"><Trash2 size={16} /></Button>
+                          </div>
+                      ))}
+                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', price: 0 })} className="mt-2"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Línea de Costo</Button>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Card>
+        
+          <Card>
+            <AccordionItem value="final-price" className="border-b-0">
+              <AccordionTrigger className="p-6 hover:no-underline">
+                <div className="text-left">
+                    <CardTitle className="font-headline text-2xl flex items-center gap-2"><DollarSign className="text-primary"/> Precio Final</CardTitle>
+                    <CardDescription>Establece tu margen de beneficio e impuestos para calcular el precio final.</CardDescription>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="p-0">
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="profitPercentage" render={({ field }) => (<FormItem><FormLabel>Porcentaje de Beneficio (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="vatPercentage" render={({ field }) => (<FormItem><FormLabel>IVA (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                  </div>
+                </CardContent>
+                <CardFooter className="bg-muted/50 p-6 rounded-b-lg">
+                    <div className="w-full space-y-2">
+                        <div className="flex justify-between text-sm"><span>Sub-total</span><span>{formatCurrency(calculations.subTotal)}</span></div>
+                        <div className="flex justify-between text-sm"><span>Beneficio</span><span>{formatCurrency(calculations.profitAmount)}</span></div>
+                        <div className="flex justify-between text-sm"><span>IVA</span><span>{formatCurrency(calculations.vatAmount)}</span></div>
+                        <Separator className="my-2" />
+                        <div className="flex justify-between text-2xl font-bold text-primary">
+                            <span className="font-headline">Precio Final</span>
+                            <span>{formatCurrency(calculations.finalPrice)}</span>
                         </div>
                     </div>
-                    </AccordionContent>
-                </AccordionItem>
-            </Card>
+                </CardFooter>
+              </AccordionContent>
+            </AccordionItem>
+          </Card>
         </Accordion>
         
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline text-2xl flex items-center gap-2"><DollarSign className="text-primary"/> Precio Final</CardTitle>
-                <CardDescription>Establece tu margen de beneficio e impuestos para calcular el precio final.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="profitPercentage" render={({ field }) => (<FormItem><FormLabel>Porcentaje de Beneficio (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                <FormField control={form.control} name="vatPercentage" render={({ field }) => (<FormItem><FormLabel>IVA (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-            </CardContent>
-            <CardFooter className="bg-muted/50 p-6 rounded-b-lg">
-                <div className="w-full space-y-2">
-                    <div className="flex justify-between text-sm"><span>Sub-total</span><span>{formatCurrency(calculations.subTotal)}</span></div>
-                    <div className="flex justify-between text-sm"><span>Beneficio</span><span>{formatCurrency(calculations.profitAmount)}</span></div>
-                    <div className="flex justify-between text-sm"><span>IVA</span><span>{formatCurrency(calculations.vatAmount)}</span></div>
-                    <Separator className="my-2" />
-                    <div className="flex justify-between text-2xl font-bold text-primary">
-                        <span className="font-headline">Precio Final</span>
-                        <span>{formatCurrency(calculations.finalPrice)}</span>
-                    </div>
-                </div>
-            </CardFooter>
-        </Card>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-end">
+        <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
             <Button type="button" onClick={handleShare} variant="outline" className="w-full sm:w-auto"><Share2 className="mr-2 h-4 w-4"/> Compartir</Button>
             <Button type="button" onClick={handlePrint} className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90"><Printer className="mr-2 h-4 w-4"/> Imprimir Resumen</Button>
         </div>
@@ -380,3 +402,4 @@ export function CalculatorForm() {
     </TooltipProvider>
   );
 }
+
