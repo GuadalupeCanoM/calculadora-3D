@@ -4,7 +4,6 @@ import React from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Logo } from './icons';
 
 interface PrintSummaryProps {
   form: UseFormReturn<any>;
@@ -38,12 +37,9 @@ export const PrintSummary = React.forwardRef<HTMLDivElement, PrintSummaryProps>(
 
     return (
       <div ref={ref} className="p-8 font-body text-black bg-white">
-        <div className="flex items-center gap-4 mb-4">
-          <Logo className="h-12 w-12 text-primary" />
-          <div>
-            <h1 className="font-headline text-3xl font-bold text-primary">Calculadora de Luprintech</h1>
-            <p className="text-lg">Resumen de Precio</p>
-          </div>
+        <div className="text-center mb-4">
+          <h1 className="font-headline text-3xl font-bold text-primary">Calculadora de Luprintech</h1>
+          <p className="text-lg">Resumen de Precio</p>
         </div>
 
         <Card className="mb-6">
