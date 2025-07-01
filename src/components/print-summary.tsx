@@ -22,8 +22,7 @@ interface PrintSummaryProps {
   };
 }
 
-export const PrintSummary = React.forwardRef<HTMLDivElement, PrintSummaryProps>(
-  ({ form, calculations }, ref) => {
+export const PrintSummary = ({ form, calculations }: PrintSummaryProps) => {
     const values = form.getValues();
 
     const formatCurrency = (amount: number) => {
@@ -39,7 +38,7 @@ export const PrintSummary = React.forwardRef<HTMLDivElement, PrintSummaryProps>(
     }, []);
 
     return (
-      <div ref={ref} className="p-8 font-body text-black bg-white">
+      <div className="p-8 font-body text-black bg-white">
         <div className="text-center mb-4">
           <h1 className="font-headline text-3xl font-bold text-primary">Calculadora de Luprintech</h1>
           <p className="text-lg">Resumen de Precio</p>
@@ -81,7 +80,6 @@ export const PrintSummary = React.forwardRef<HTMLDivElement, PrintSummaryProps>(
         </div>
       </div>
     );
-  }
-);
+  };
 
 PrintSummary.displayName = 'PrintSummary';
