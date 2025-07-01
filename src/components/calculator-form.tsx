@@ -99,17 +99,28 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   });
 
   const watchedValues = form.watch();
-  
-  const {
-    printingTimeHours, printingTimeMinutes,
-    filamentWeight, spoolWeight, spoolPrice,
-    powerConsumptionWatts, energyCostKwh,
-    prepTime, prepCostPerHour, postProcessingTimeInMinutes, postProcessingCostPerHour,
-    includeMachineCosts, printerCost, investmentReturnYears, repairCost, otherCosts,
-    profitPercentage, vatPercentage, projectImage
-  } = watchedValues;
 
-  const totalPrintingTimeHours = (printingTimeHours || 0) + ((printingTimeMinutes || 0) / 60);
+  // All values that are used in arithmetic operations are explicitly converted to numbers
+  // to prevent string concatenation issues, especially with the '+' operator.
+  const printingTimeHours = Number(watchedValues.printingTimeHours || 0);
+  const printingTimeMinutes = Number(watchedValues.printingTimeMinutes || 0);
+  const filamentWeight = Number(watchedValues.filamentWeight || 0);
+  const spoolWeight = Number(watchedValues.spoolWeight || 1000);
+  const spoolPrice = Number(watchedValues.spoolPrice || 0);
+  const powerConsumptionWatts = Number(watchedValues.powerConsumptionWatts || 0);
+  const energyCostKwh = Number(watchedValues.energyCostKwh || 0);
+  const prepTime = Number(watchedValues.prepTime || 0);
+  const prepCostPerHour = Number(watchedValues.prepCostPerHour || 0);
+  const postProcessingTimeInMinutes = Number(watchedValues.postProcessingTimeInMinutes || 0);
+  const postProcessingCostPerHour = Number(watchedValues.postProcessingCostPerHour || 0);
+  const printerCost = Number(watchedValues.printerCost || 0);
+  const investmentReturnYears = Number(watchedValues.investmentReturnYears || 0);
+  const repairCost = Number(watchedValues.repairCost || 0);
+  const otherCosts = watchedValues.otherCosts || [];
+  const profitPercentage = Number(watchedValues.profitPercentage || 0);
+  const vatPercentage = Number(watchedValues.vatPercentage || 0);
+
+  const totalPrintingTimeHours = printingTimeHours + (printingTimeMinutes / 60);
 
   let amortizationForJob = 0;
   if (investmentReturnYears > 0 && printerCost > 0) {
@@ -123,11 +134,11 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
     : 0;
   const filamentCost = spoolWeight > 0 ? (filamentWeight / spoolWeight) * spoolPrice : 0;
   const prepCost = (prepTime / 60) * prepCostPerHour;
-  const totalPostProcessingTimeHours = (postProcessingTimeInMinutes || 0) / 60;
+  const totalPostProcessingTimeHours = postProcessingTimeInMinutes / 60;
   const postProcessingCost = totalPostProcessingTimeHours * postProcessingCostPerHour;
   const laborCost = prepCost + postProcessingCost;
-  const currentMachineCost = includeMachineCosts ? (amortizationForJob + repairCost) : 0;
-  const otherCostsTotal = otherCosts.reduce((acc, cost) => acc + (cost.price || 0), 0);
+  const currentMachineCost = watchedValues.includeMachineCosts ? (amortizationForJob + repairCost) : 0;
+  const otherCostsTotal = otherCosts.reduce((acc, cost) => acc + Number(cost.price || 0), 0);
   const subTotal = filamentCost + electricityCost + laborCost + currentMachineCost + otherCostsTotal;
   const profitAmount = subTotal * (profitPercentage / 100);
   const priceBeforeVat = subTotal + profitAmount;
@@ -327,10 +338,10 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
                           <Button type="button" variant="outline" onClick={() => imageInputRef.current?.click()}>
                               <ImagePlus className="mr-2" /> Subir Imagen
                           </Button>
-                          {projectImage && (
+                          {watchedValues.projectImage && (
                               <div className="relative">
                                   <Image
-                                      src={projectImage}
+                                      src={watchedValues.projectImage}
                                       alt="Vista previa del proyecto"
                                       width={64}
                                       height={64}
