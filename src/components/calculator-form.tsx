@@ -245,12 +245,18 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
           text: summaryText.trim(),
         });
       } catch (error) {
+        // No hacer nada si el usuario cancela la acción de compartir.
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            return;
+        }
+        // Como alternativa, copiar al portapapeles para otros errores.
         await navigator.clipboard.writeText(summaryText.trim());
         toast({ title: 'Resumen copiado al portapapeles.' });
       }
     } else {
-      await navigator.clipboard.writeText(summaryText.trim());
-      toast({ title: 'Resumen copiado al portapapeles.' });
+        // Alternativa para navegadores no compatibles.
+        await navigator.clipboard.writeText(summaryText.trim());
+        toast({ title: 'Resumen copiado al portapapeles.' });
     }
   };
 
