@@ -235,7 +235,6 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
           text: summaryText.trim(),
         });
       } catch (error) {
-        console.error('Error sharing:', error);
         await navigator.clipboard.writeText(summaryText.trim());
         toast({ title: 'Error al compartir, resumen copiado al portapapeles.' });
       }
