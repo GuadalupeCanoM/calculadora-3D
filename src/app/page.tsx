@@ -8,10 +8,10 @@ export default function Home() {
         <header className="mb-8 flex flex-col items-center gap-4 text-center">
           <Logo className="h-16 w-16 text-primary" />
           <h1 className="font-headline text-4xl font-bold tracking-tighter text-primary sm:text-5xl md:text-6xl">
-            3D Print Price Pal
+            Calculadora de Luprintech
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground">
-            Your friendly assistant for calculating 3D printing costs with precision. Upload your G-code for an instant analysis.
+            Tu asistente amigable para calcular los costos de impresión 3D con precisión. Sube tu G-code para un análisis instantáneo.
           </p>
         </header>
         <CalculatorForm />
