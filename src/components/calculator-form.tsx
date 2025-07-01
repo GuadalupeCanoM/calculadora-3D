@@ -100,8 +100,6 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
 
   const watchedValues = form.watch();
 
-  // All values that are used in arithmetic operations are explicitly converted to numbers
-  // to prevent string concatenation issues, especially with the '+' operator.
   const printingTimeHours = Number(watchedValues.printingTimeHours || 0);
   const printingTimeMinutes = Number(watchedValues.printingTimeMinutes || 0);
   const filamentWeight = Number(watchedValues.filamentWeight || 0);
@@ -123,8 +121,7 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const totalPrintingTimeHours = printingTimeHours + (printingTimeMinutes / 60);
 
   let amortizationForJob = 0;
-  if (investmentReturnYears > 0 && printerCost > 0) {
-    // Assuming 8 hours of usage per day, 365 days a year.
+  if (watchedValues.includeMachineCosts && investmentReturnYears > 0 && printerCost > 0) {
     const machineHourlyRate = printerCost / (investmentReturnYears * 365 * 8);
     amortizationForJob = machineHourlyRate * totalPrintingTimeHours;
   }
@@ -139,6 +136,7 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const laborCost = prepCost + postProcessingCost;
   const currentMachineCost = watchedValues.includeMachineCosts ? (amortizationForJob + repairCost) : 0;
   const otherCostsTotal = otherCosts.reduce((acc, cost) => acc + Number(cost.price || 0), 0);
+
   const subTotal = filamentCost + electricityCost + laborCost + currentMachineCost + otherCostsTotal;
   const profitAmount = subTotal * (profitPercentage / 100);
   const priceBeforeVat = subTotal + profitAmount;
@@ -246,7 +244,7 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
         });
       } catch (error) {
         await navigator.clipboard.writeText(summaryText.trim());
-        toast({ title: 'Error al compartir, resumen copiado al portapapeles.' });
+        toast({ title: 'Resumen copiado al portapapeles.' });
       }
     } else {
       await navigator.clipboard.writeText(summaryText.trim());
