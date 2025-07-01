@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FolderOpen, Github, Youtube, Instagram } from "lucide-react";
+import { Logo } from "@/components/icons";
 
 export default function Home() {
   const form = useForm<FormData>({
@@ -17,6 +18,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-8 md:p-12">
       <div className="w-full max-w-4xl">
         <header className="mb-8 flex flex-col items-center gap-4 text-center">
+          <Logo className="w-32 h-auto mb-4" />
           <h1 className="font-headline text-4xl font-bold tracking-tighter text-primary sm:text-5xl md:text-6xl">
             Calculadora de Luprintech
           </h1>
