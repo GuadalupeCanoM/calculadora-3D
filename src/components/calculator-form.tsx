@@ -276,7 +276,10 @@ export function CalculatorForm() {
                                 render={({ field }) => (
                                     <FormItem className="w-full">
                                         <FormControl>
-                                            <Input type="number" placeholder="Horas" {...field} />
+                                            <div className="relative">
+                                                <Input type="number" placeholder="Horas" className="pr-8" {...field} />
+                                                <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground text-sm pointer-events-none">h</span>
+                                            </div>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -288,7 +291,10 @@ export function CalculatorForm() {
                                 render={({ field }) => (
                                     <FormItem className="w-full">
                                         <FormControl>
-                                            <Input type="number" placeholder="Minutos" {...field} />
+                                            <div className="relative">
+                                                <Input type="number" placeholder="Minutos" className="pr-8" {...field} />
+                                                <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground text-sm pointer-events-none">m</span>
+                                            </div>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -431,4 +437,3 @@ export function CalculatorForm() {
     </TooltipProvider>
   );
 }
-
