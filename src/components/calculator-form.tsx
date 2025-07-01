@@ -210,7 +210,9 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   };
 
   const handlePrint = () => {
-    window.print();
+    setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   const handleShare = async () => {
