@@ -39,11 +39,6 @@ export const PrintSummary = ({ form, calculations }: PrintSummaryProps) => {
 
     return (
       <div className="p-8 font-body text-black bg-white">
-        <div className="text-center mb-4">
-          <h1 className="font-headline text-3xl font-bold text-primary">Calculadora de Luprintech</h1>
-          <p className="text-lg">Resumen de Precio</p>
-        </div>
-
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Trabajo: {values.jobName || 'N/A'}</CardTitle>
