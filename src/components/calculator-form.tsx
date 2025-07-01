@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -82,16 +82,6 @@ export function CalculatorForm() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const printRef = useRef<HTMLDivElement>(null);
-  const [calculations, setCalculations] = useState({
-    filamentCost: 0,
-    laborCost: 0,
-    otherCostsTotal: 0,
-    subTotal: 0,
-    profitAmount: 0,
-    priceBeforeVat: 0,
-    vatAmount: 0,
-    finalPrice: 0,
-  });
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -104,33 +94,31 @@ export function CalculatorForm() {
   });
 
   const watchedValues = form.watch();
+  
+  const {
+    filamentWeight, spoolWeight, spoolPrice,
+    prepTime, prepCostPerHour, postProcessingTime, postProcessingCostPerHour,
+    includeMaintenance, maintenanceCost, otherCosts,
+    profitPercentage, vatPercentage,
+  } = watchedValues;
 
-  useEffect(() => {
-    const {
-      filamentWeight, spoolWeight, spoolPrice,
-      prepTime, prepCostPerHour, postProcessingTime, postProcessingCostPerHour,
-      includeMaintenance, maintenanceCost, otherCosts,
-      profitPercentage, vatPercentage,
-    } = watchedValues;
+  const filamentCost = spoolWeight > 0 ? (filamentWeight / spoolWeight) * spoolPrice : 0;
+  const prepCost = (prepTime / 60) * prepCostPerHour;
+  const postProcessingCost = (postProcessingTime / 60) * postProcessingCostPerHour;
+  const laborCost = prepCost + postProcessingCost;
+  const currentMaintenanceCost = includeMaintenance ? maintenanceCost : 0;
+  const otherCostsTotal = otherCosts.reduce((acc, cost) => acc + (cost.price || 0), 0);
+  const subTotal = filamentCost + laborCost + currentMaintenanceCost + otherCostsTotal;
+  const profitAmount = subTotal * (profitPercentage / 100);
+  const priceBeforeVat = subTotal + profitAmount;
+  const vatAmount = priceBeforeVat * (vatPercentage / 100);
+  const finalPrice = priceBeforeVat + vatAmount;
 
-    const filamentCost = spoolWeight > 0 ? (filamentWeight / spoolWeight) * spoolPrice : 0;
-    const prepCost = (prepTime / 60) * prepCostPerHour;
-    const postProcessingCost = (postProcessingTime / 60) * postProcessingCostPerHour;
-    const laborCost = prepCost + postProcessingCost;
-    const currentMaintenanceCost = includeMaintenance ? maintenanceCost : 0;
-    const otherCostsTotal = otherCosts.reduce((acc, cost) => acc + (cost.price || 0), 0);
+  const calculations = {
+    filamentCost, laborCost, otherCostsTotal, subTotal,
+    profitAmount, priceBeforeVat, vatAmount, finalPrice,
+  };
 
-    const subTotal = filamentCost + laborCost + currentMaintenanceCost + otherCostsTotal;
-    const profitAmount = subTotal * (profitPercentage / 100);
-    const priceBeforeVat = subTotal + profitAmount;
-    const vatAmount = priceBeforeVat * (vatPercentage / 100);
-    const finalPrice = priceBeforeVat + vatAmount;
-
-    setCalculations({
-      filamentCost, laborCost, otherCostsTotal, subTotal,
-      profitAmount, priceBeforeVat, vatAmount, finalPrice,
-    });
-  }, [watchedValues]);
 
   const handleGcodeAnalyze = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
