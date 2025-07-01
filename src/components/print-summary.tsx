@@ -9,6 +9,7 @@ interface PrintSummaryProps {
   form: UseFormReturn<any>;
   calculations: {
     filamentCost: number;
+    electricityCost: number;
     laborCost: number;
     otherCostsTotal: number;
     subTotal: number;
@@ -54,6 +55,7 @@ export const PrintSummary = React.forwardRef<HTMLDivElement, PrintSummaryProps>(
             <CardHeader><CardTitle>Desglose de Costes</CardTitle></CardHeader>
             <CardContent className="space-y-4 text-base">
               <div className="flex justify-between"><span>Coste de Filamento</span> <strong>{formatCurrency(calculations.filamentCost)}</strong></div>
+              <div className="flex justify-between"><span>Coste de Electricidad</span> <strong>{formatCurrency(calculations.electricityCost)}</strong></div>
               <div className="flex justify-between"><span>Coste de Mano de Obra</span> <strong>{formatCurrency(calculations.laborCost)}</strong></div>
               {values.includeMaintenance && <div className="flex justify-between"><span>Coste de Mantenimiento</span> <strong>{formatCurrency(values.maintenanceCost || 0)}</strong></div>}
               <div className="flex justify-between"><span>Otros Costes</span> <strong>{formatCurrency(calculations.otherCostsTotal)}</strong></div>

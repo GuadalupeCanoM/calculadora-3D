@@ -48,6 +48,7 @@ import {
   Palette,
   DollarSign,
   Wrench,
+  Zap,
 } from "lucide-react";
 import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -61,6 +62,8 @@ const formSchema = z.object({
   filamentType: z.string().optional(),
   spoolPrice: z.coerce.number().min(0).default(50),
   spoolWeight: z.coerce.number().min(1, "El peso de la bobina debe ser mayor que 0").default(1000),
+  powerConsumptionWatts: z.coerce.number().min(0).default(0),
+  energyCostKwh: z.coerce.number().min(0).default(0),
   prepTime: z.coerce.number().min(0).default(0),
   prepCostPerHour: z.coerce.number().min(0).default(30),
   postProcessingTime: z.coerce.number().min(0).default(0),
@@ -96,26 +99,32 @@ export function CalculatorForm() {
   const watchedValues = form.watch();
   
   const {
+    printingTimeHours, printingTimeMinutes,
     filamentWeight, spoolWeight, spoolPrice,
+    powerConsumptionWatts, energyCostKwh,
     prepTime, prepCostPerHour, postProcessingTime, postProcessingCostPerHour,
     includeMaintenance, maintenanceCost, otherCosts,
     profitPercentage, vatPercentage,
   } = watchedValues;
 
+  const totalPrintingTimeHours = (printingTimeHours || 0) + ((printingTimeMinutes || 0) / 60);
+  const electricityCost = totalPrintingTimeHours > 0 && powerConsumptionWatts > 0 && energyCostKwh > 0
+    ? (powerConsumptionWatts / 1000) * totalPrintingTimeHours * energyCostKwh
+    : 0;
   const filamentCost = spoolWeight > 0 ? (filamentWeight / spoolWeight) * spoolPrice : 0;
   const prepCost = (prepTime / 60) * prepCostPerHour;
   const postProcessingCost = (postProcessingTime / 60) * postProcessingCostPerHour;
   const laborCost = prepCost + postProcessingCost;
   const currentMaintenanceCost = includeMaintenance ? maintenanceCost : 0;
   const otherCostsTotal = otherCosts.reduce((acc, cost) => acc + (cost.price || 0), 0);
-  const subTotal = filamentCost + laborCost + currentMaintenanceCost + otherCostsTotal;
+  const subTotal = filamentCost + electricityCost + laborCost + currentMaintenanceCost + otherCostsTotal;
   const profitAmount = subTotal * (profitPercentage / 100);
   const priceBeforeVat = subTotal + profitAmount;
   const vatAmount = priceBeforeVat * (vatPercentage / 100);
   const finalPrice = priceBeforeVat + vatAmount;
 
   const calculations = {
-    filamentCost, laborCost, otherCostsTotal, subTotal,
+    filamentCost, electricityCost, laborCost, otherCostsTotal, subTotal,
     profitAmount, priceBeforeVat, vatAmount, finalPrice,
   };
 
@@ -177,6 +186,7 @@ export function CalculatorForm() {
     Trabajo de Impresión 3D: ${watchedValues.jobName || 'Sin título'}
     ---
     Coste de Filamento: ${formatCurrency(calculations.filamentCost)}
+    Coste de Electricidad: ${formatCurrency(calculations.electricityCost)}
     Coste de Mano de Obra: ${formatCurrency(calculations.laborCost)}
     Otros Costes: ${formatCurrency(calculations.otherCostsTotal + (watchedValues.includeMaintenance ? watchedValues.maintenanceCost : 0))}
     ---
@@ -212,7 +222,7 @@ export function CalculatorForm() {
         <Accordion 
           type="multiple" 
           className="w-full space-y-4"
-          defaultValue={['job-details', 'filament-costs', 'labor-costs', 'final-price']}
+          defaultValue={['job-details', 'filament-costs', 'electricity-costs', 'labor-costs', 'final-price']}
         >
           <Card>
             <AccordionItem value="job-details" className="border-b-0">
@@ -354,6 +364,36 @@ export function CalculatorForm() {
                   )} />
                   <FormField control={form.control} name="spoolWeight" render={({ field }) => (
                       <FormItem><FormLabel>Peso de la Bobina (gramos)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>
+                  )} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Card>
+
+          <Card>
+            <AccordionItem value="electricity-costs" className="border-b-0">
+              <AccordionTrigger className="p-6 hover:no-underline">
+                <div className="text-left">
+                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><Zap className="text-primary"/> Electricidad</CardTitle>
+                  <CardDescription>Calcula el coste de la electricidad consumida durante la impresión.</CardDescription>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="p-6 pt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField control={form.control} name="powerConsumptionWatts" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Consumo de energía (vatios)</FormLabel>
+                        <FormControl><Input type="number" placeholder="Ej: 150" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                  )} />
+                  <FormField control={form.control} name="energyCostKwh" render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Coste de energía por kWh</FormLabel>
+                          <FormControl><Input type="number" placeholder="Ej: 0.15" {...field} /></FormControl>
+                          <FormDescription>El coste en la moneda seleccionada.</FormDescription>
+                          <FormMessage/>
+                      </FormItem>
                   )} />
                 </div>
               </AccordionContent>
