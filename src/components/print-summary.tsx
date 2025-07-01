@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -11,6 +12,7 @@ interface PrintSummaryProps {
     filamentCost: number;
     electricityCost: number;
     laborCost: number;
+    currentMachineCost: number;
     otherCostsTotal: number;
     subTotal: number;
     profitAmount: number;
@@ -57,7 +59,7 @@ export const PrintSummary = React.forwardRef<HTMLDivElement, PrintSummaryProps>(
               <div className="flex justify-between"><span>Coste de Filamento</span> <strong>{formatCurrency(calculations.filamentCost)}</strong></div>
               <div className="flex justify-between"><span>Coste de Electricidad</span> <strong>{formatCurrency(calculations.electricityCost)}</strong></div>
               <div className="flex justify-between"><span>Coste de Mano de Obra</span> <strong>{formatCurrency(calculations.laborCost)}</strong></div>
-              {values.includeMaintenance && <div className="flex justify-between"><span>Coste de Mantenimiento</span> <strong>{formatCurrency(values.maintenanceCost || 0)}</strong></div>}
+              {values.includeMachineCosts && <div className="flex justify-between"><span>Coste de Máquina y Mantenimiento</span> <strong>{formatCurrency(calculations.currentMachineCost)}</strong></div>}
               <div className="flex justify-between"><span>Otros Costes</span> <strong>{formatCurrency(calculations.otherCostsTotal)}</strong></div>
               <Separator />
               <div className="flex justify-between font-bold text-lg"><span>Sub-total</span> <strong>{formatCurrency(calculations.subTotal)}</strong></div>

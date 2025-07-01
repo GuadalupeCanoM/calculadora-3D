@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -49,6 +49,7 @@ import {
   DollarSign,
   Wrench,
   Zap,
+  Save,
 } from "lucide-react";
 import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -68,8 +69,10 @@ const formSchema = z.object({
   prepCostPerHour: z.coerce.number().min(0).default(30),
   postProcessingTime: z.coerce.number().min(0).default(0),
   postProcessingCostPerHour: z.coerce.number().min(0).default(30),
-  includeMaintenance: z.boolean().default(false),
-  maintenanceCost: z.coerce.number().min(0).default(5),
+  includeMachineCosts: z.boolean().default(false),
+  printerCost: z.coerce.number().min(0).default(0),
+  investmentReturnYears: z.coerce.number().min(0).default(0),
+  repairCost: z.coerce.number().min(0).default(0),
   otherCosts: z.array(z.object({
     name: z.string().min(1, 'El nombre del artículo no puede estar vacío.'),
     price: z.coerce.number().min(0),
@@ -91,6 +94,19 @@ export function CalculatorForm() {
     defaultValues: formSchema.parse({}),
   });
 
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem('savedProject');
+      if (savedData) {
+        form.reset(JSON.parse(savedData));
+        toast({ title: 'Proyecto cargado', description: 'Se ha cargado tu proyecto guardado.' });
+      }
+    } catch (error) {
+      console.error("Failed to load project from localStorage", error);
+      toast({ variant: "destructive", title: 'Error al cargar', description: 'No se pudo cargar el proyecto guardado.' });
+    }
+  }, [form, toast]);
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "otherCosts",
@@ -103,7 +119,7 @@ export function CalculatorForm() {
     filamentWeight, spoolWeight, spoolPrice,
     powerConsumptionWatts, energyCostKwh,
     prepTime, prepCostPerHour, postProcessingTime, postProcessingCostPerHour,
-    includeMaintenance, maintenanceCost, otherCosts,
+    includeMachineCosts, repairCost, otherCosts,
     profitPercentage, vatPercentage,
   } = watchedValues;
 
@@ -115,16 +131,16 @@ export function CalculatorForm() {
   const prepCost = (prepTime / 60) * prepCostPerHour;
   const postProcessingCost = (postProcessingTime / 60) * postProcessingCostPerHour;
   const laborCost = prepCost + postProcessingCost;
-  const currentMaintenanceCost = includeMaintenance ? maintenanceCost : 0;
+  const currentMachineCost = includeMachineCosts ? repairCost : 0;
   const otherCostsTotal = otherCosts.reduce((acc, cost) => acc + (cost.price || 0), 0);
-  const subTotal = filamentCost + electricityCost + laborCost + currentMaintenanceCost + otherCostsTotal;
+  const subTotal = filamentCost + electricityCost + laborCost + currentMachineCost + otherCostsTotal;
   const profitAmount = subTotal * (profitPercentage / 100);
   const priceBeforeVat = subTotal + profitAmount;
   const vatAmount = priceBeforeVat * (vatPercentage / 100);
   const finalPrice = priceBeforeVat + vatAmount;
 
   const calculations = {
-    filamentCost, electricityCost, laborCost, otherCostsTotal, subTotal,
+    filamentCost, electricityCost, laborCost, currentMachineCost, otherCostsTotal, subTotal,
     profitAmount, priceBeforeVat, vatAmount, finalPrice,
   };
 
@@ -176,19 +192,25 @@ export function CalculatorForm() {
       document.body.innerHTML = printHtml;
       window.print();
       document.body.innerHTML = originalContents;
-      // We need to re-attach our react app
       window.location.reload();
     }
   };
 
   const handleShare = async () => {
-    const summaryText = `
+    let summaryText = `
     Trabajo de Impresión 3D: ${watchedValues.jobName || 'Sin título'}
     ---
     Coste de Filamento: ${formatCurrency(calculations.filamentCost)}
     Coste de Electricidad: ${formatCurrency(calculations.electricityCost)}
     Coste de Mano de Obra: ${formatCurrency(calculations.laborCost)}
-    Otros Costes: ${formatCurrency(calculations.otherCostsTotal + (watchedValues.includeMaintenance ? watchedValues.maintenanceCost : 0))}
+    `;
+
+    if(watchedValues.includeMachineCosts) {
+      summaryText += `\nCoste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
+    }
+
+    summaryText += `
+    Otros Costes: ${formatCurrency(calculations.otherCostsTotal)}
     ---
     Sub-total: ${formatCurrency(calculations.subTotal)}
     Beneficio (${watchedValues.profitPercentage}%): ${formatCurrency(calculations.profitAmount)}
@@ -201,7 +223,7 @@ export function CalculatorForm() {
       try {
         await navigator.share({
           title: 'Resumen de Coste de Impresión 3D',
-          text: summaryText,
+          text: summaryText.trim(),
         });
       } catch (error) {
         console.error('Error sharing:', error);
@@ -211,6 +233,17 @@ export function CalculatorForm() {
     } else {
       await navigator.clipboard.writeText(summaryText.trim());
       toast({ title: 'Resumen copiado al portapapeles.' });
+    }
+  };
+
+  const handleSaveProject = () => {
+    try {
+      const data = form.getValues();
+      localStorage.setItem('savedProject', JSON.stringify(data));
+      toast({ title: 'Proyecto guardado', description: 'Tu configuración ha sido guardada en este navegador.' });
+    } catch (error) {
+      console.error("Failed to save project to localStorage", error);
+      toast({ variant: "destructive", title: 'Error al guardar', description: 'No se pudo guardar el proyecto.' });
     }
   };
 
@@ -366,6 +399,11 @@ export function CalculatorForm() {
                       <FormItem><FormLabel>Peso de la Bobina (gramos)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>
                   )} />
                 </div>
+                <Separator className="my-6" />
+                <div className="flex justify-between font-medium text-lg">
+                    <span>Coste total de filamento:</span>
+                    <span className="text-primary">{formatCurrency(calculations.filamentCost)}</span>
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Card>
@@ -396,6 +434,11 @@ export function CalculatorForm() {
                       </FormItem>
                   )} />
                 </div>
+                <Separator className="my-6" />
+                <div className="flex justify-between font-medium text-lg">
+                    <span>Coste total de electricidad:</span>
+                    <span className="text-primary">{formatCurrency(calculations.electricityCost)}</span>
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Card>
@@ -404,7 +447,7 @@ export function CalculatorForm() {
             <AccordionItem value="labor-costs" className="border-b-0">
               <AccordionTrigger className="p-6 hover:no-underline">
                 <div className="text-left">
-                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><Wrench className="text-primary"/> Mano de Obra, Mantenimiento y Otros Costes</CardTitle>
+                  <CardTitle className="font-headline text-2xl flex items-center gap-2"><Wrench className="text-primary"/> Mano de Obra, Máquina y Otros</CardTitle>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="p-6 pt-0">
@@ -417,24 +460,42 @@ export function CalculatorForm() {
                         <FormField control={form.control} name="postProcessingTime" render={({ field }) => (<FormItem><FormLabel>Tiempo de Post-procesamiento (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                         <FormField control={form.control} name="postProcessingCostPerHour" render={({ field }) => (<FormItem><FormLabel>Coste de Post-procesamiento/hr</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                     </div>
+                    <Separator className="my-6" />
+                    <div className="flex justify-between font-medium text-lg">
+                        <span>Coste total de mano de obra:</span>
+                        <span className="text-primary">{formatCurrency(calculations.laborCost)}</span>
+                    </div>
                   </div>
                   <Separator/>
                   <div>
                       <h3 className="font-semibold mb-2">Máquina y Mantenimiento</h3>
-                      <FormField control={form.control} name="includeMaintenance" render={({ field }) => (
+                      <FormField control={form.control} name="includeMachineCosts" render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                               <div className="space-y-0.5">
-                                  <FormLabel>¿Incluir Costes de Mantenimiento?</FormLabel>
-                                  <FormDescription>Activa para añadir costes opcionales de la máquina.</FormDescription>
+                                  <FormLabel>¿Incluir Costes de Máquina?</FormLabel>
+                                  <FormDescription>Activa para añadir costes de amortización y reparación.</FormDescription>
                               </div>
                               <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                           </FormItem>
                       )} />
-                      {watchedValues.includeMaintenance && (
-                          <FormField control={form.control} name="maintenanceCost" render={({ field }) => (
-                          <FormItem className="mt-4"><FormLabel>Coste de Mantenimiento</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
-                          )} />
+                      {watchedValues.includeMachineCosts && (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <FormField control={form.control} name="printerCost" render={({ field }) => (
+                                <FormItem><FormLabel>Coste de la impresora</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
+                            )} />
+                            <FormField control={form.control} name="investmentReturnYears" render={({ field }) => (
+                                <FormItem><FormLabel>Retorno de la inversión (años)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
+                            )} />
+                             <FormField control={form.control} name="repairCost" render={({ field }) => (
+                                <FormItem><FormLabel>Coste de reparación</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormDescription>Coste fijo por trabajo.</FormDescription></FormItem>
+                            )} />
+                          </div>
                       )}
+                    <Separator className="my-6" />
+                    <div className="flex justify-between font-medium text-lg">
+                        <span>Coste total de máquina y mantenimiento:</span>
+                        <span className="text-primary">{formatCurrency(calculations.currentMachineCost)}</span>
+                    </div>
                   </div>
                   <Separator/>
                   <div>
@@ -486,6 +547,7 @@ export function CalculatorForm() {
         </Accordion>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
+            <Button type="button" onClick={handleSaveProject} variant="secondary" className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4"/> Guardar Proyecto</Button>
             <Button type="button" onClick={handleShare} variant="outline" className="w-full sm:w-auto"><Share2 className="mr-2 h-4 w-4"/> Compartir</Button>
             <Button type="button" onClick={handlePrint} className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90"><Printer className="mr-2 h-4 w-4"/> Imprimir Resumen</Button>
         </div>
