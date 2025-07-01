@@ -32,7 +32,7 @@ export default function Home() {
         <CalculatorForm form={form} />
       </div>
       <footer className="py-6 text-center text-sm text-muted-foreground">
-        <p>App creada por Guadalupe Cano.</p>
+        <p>Powered by Guadalupe Cano.</p>
         <div className="flex justify-center gap-6 mt-4">
           <a href="https://github.com/GuadalupeCanoM" target="_blank" rel="noopener noreferrer" aria-label="GitHub de Guadalupe Cano" className="text-muted-foreground hover:text-primary transition-colors">
             <Github className="h-5 w-5" />
