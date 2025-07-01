@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FolderOpen, Github, Youtube, Instagram } from "lucide-react";
-import { Logo } from "@/components/icons";
 
 export default function Home() {
   const form = useForm<FormData>({
@@ -17,8 +16,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-8 md:p-12">
       <div className="w-full max-w-4xl">
-        <header className="mb-8 flex flex-col items-center gap-4 text-center">
-          <Logo className="w-32 h-auto mb-4" />
+        <header className="mb-8 flex flex-col items-center gap-4 text-center print:hidden">
           <h1 className="font-headline text-4xl font-bold tracking-tighter text-primary sm:text-5xl md:text-6xl">
             Calculadora de Luprintech
           </h1>
@@ -33,7 +31,7 @@ export default function Home() {
         </header>
         <CalculatorForm form={form} />
       </div>
-      <footer className="py-6 text-center text-sm text-muted-foreground">
+      <footer className="py-6 text-center text-sm text-muted-foreground print:hidden">
         <p>Powered by Guadalupe Cano.</p>
         <div className="flex justify-center gap-6 mt-4">
           <a href="https://github.com/GuadalupeCanoM" target="_blank" rel="noopener noreferrer" aria-label="GitHub de Guadalupe Cano" className="text-muted-foreground hover:text-primary transition-colors">
