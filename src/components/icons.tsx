@@ -14,10 +14,10 @@ export const Logo = (props: SVGProps<SVGSVGElement>) => (
         </defs>
 
         <text fontFamily="Space Grotesk, sans-serif" fontSize="22px" fontWeight="bold" letterSpacing="1.5">
-            <textPath href="#arc" fill="#47F8FF" >
+            <textPath href="#arc" fill="#C875A4" >
                 LUPRIN
             </textPath>
-            <textPath href="#arc" startOffset="51%" fill="#FFB3E4">
+            <textPath href="#arc" startOffset="51%" fill="#47F8FF">
                 TECH
             </textPath>
         </text>
