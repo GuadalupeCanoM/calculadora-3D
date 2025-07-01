@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from './ui/scroll-area';
-import { Trash2, FolderUp } from 'lucide-react';
+import { Trash2, FolderUp, ImageIcon } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import type { FormData } from './calculator-form';
 
@@ -113,8 +114,23 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
               <ul className="space-y-2">
                 {projects.map((project) => (
                   <li key={project.key} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
-                    <span className="font-medium truncate pr-2">{project.name}</span>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      {project.data.projectImage ? (
+                        <Image
+                          src={project.data.projectImage}
+                          alt={`Imagen de ${project.name}`}
+                          width={40}
+                          height={40}
+                          className="h-10 w-10 rounded-md object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-secondary text-muted-foreground flex-shrink-0">
+                          <ImageIcon className="h-5 w-5" />
+                        </div>
+                      )}
+                      <span className="font-medium truncate">{project.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       <Button variant="ghost" size="icon" onClick={() => handleLoadProject(project)} title="Cargar proyecto">
                         <FolderUp className="h-4 w-4" />
                       </Button>

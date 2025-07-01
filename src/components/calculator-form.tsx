@@ -4,6 +4,7 @@
 import React, { useState, useRef } from "react";
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import * as z from "zod";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -49,12 +50,14 @@ import {
   Wrench,
   Zap,
   Save,
+  ImagePlus,
 } from "lucide-react";
 import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 export const formSchema = z.object({
   jobName: z.string().optional().default(""),
+  projectImage: z.string().optional().default(""),
   currency: z.string().min(1, 'La moneda es obligatoria.').default('EUR'),
   printingTimeHours: z.coerce.number().min(0).default(0),
   printingTimeMinutes: z.coerce.number().min(0).default(0),
@@ -88,6 +91,7 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
   const { fields, append, remove } = useFieldArray({
@@ -103,7 +107,7 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
     powerConsumptionWatts, energyCostKwh,
     prepTime, prepCostPerHour, postProcessingTimeInMinutes, postProcessingCostPerHour,
     includeMachineCosts, repairCost, otherCosts,
-    profitPercentage, vatPercentage,
+    profitPercentage, vatPercentage, projectImage
   } = watchedValues;
 
   const totalPrintingTimeHours = (printingTimeHours || 0) + ((printingTimeMinutes || 0) / 60);
@@ -160,6 +164,27 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
     setIsAnalyzing(false);
   };
   
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      toast({
+        variant: "destructive",
+        title: "Imagen demasiado grande",
+        description: "Por favor, sube una imagen de menos de 2MB.",
+      });
+      if(event.target) event.target.value = ''; // Clear the input
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      form.setValue('projectImage', reader.result as string, { shouldValidate: true });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
@@ -291,6 +316,45 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
                       )}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <FormLabel>Imagen del Proyecto (Opcional)</FormLabel>
+                     <div className="flex items-center gap-4">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            ref={imageInputRef}
+                            onChange={handleImageUpload}
+                        />
+                        <Button type="button" variant="outline" onClick={() => imageInputRef.current?.click()}>
+                            <ImagePlus className="mr-2" /> Subir Imagen
+                        </Button>
+                        {projectImage && (
+                            <div className="relative">
+                                <Image
+                                    src={projectImage}
+                                    alt="Vista previa del proyecto"
+                                    width={64}
+                                    height={64}
+                                    className="h-16 w-16 rounded-md object-cover border"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute -right-2 -top-2 h-6 w-6 rounded-full"
+                                    onClick={() => form.setValue('projectImage', '')}
+                                >
+                                    <Trash2 className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                     <FormDescription>
+                        Añade una imagen para identificar tu proyecto guardado. Máx 2MB.
+                    </FormDescription>
+                  </div>
+                  <Separator />
                   <div>
                     <FormLabel>Análisis de G-code</FormLabel>
                     <div className="mt-2">
