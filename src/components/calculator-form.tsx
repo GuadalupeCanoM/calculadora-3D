@@ -55,12 +55,12 @@ import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 const formSchema = z.object({
-  jobName: z.string().optional(),
+  jobName: z.string().optional().default(""),
   currency: z.string().min(1, 'La moneda es obligatoria.').default('EUR'),
   printingTimeHours: z.coerce.number().min(0).default(0),
   printingTimeMinutes: z.coerce.number().min(0).default(0),
   filamentWeight: z.coerce.number().min(0).default(0),
-  filamentType: z.string().optional(),
+  filamentType: z.string().optional().default(""),
   spoolPrice: z.coerce.number().min(0).default(20),
   spoolWeight: z.coerce.number().min(1, "El peso de la bobina debe ser mayor que 0").default(1000),
   powerConsumptionWatts: z.coerce.number().min(0).default(0),
@@ -75,8 +75,8 @@ const formSchema = z.object({
   investmentReturnYears: z.coerce.number().min(0).default(0),
   repairCost: z.coerce.number().min(0).default(0),
   otherCosts: z.array(z.object({
-    name: z.string().min(1, 'El nombre del artículo no puede estar vacío.'),
-    price: z.coerce.number().min(0),
+    name: z.string().min(1, 'El nombre del artículo no puede estar vacío.').default(''),
+    price: z.coerce.number().min(0).default(0),
   })).default([]),
   profitPercentage: z.coerce.number().min(0).default(20),
   vatPercentage: z.coerce.number().min(0).default(0),
@@ -99,7 +99,10 @@ export function CalculatorForm() {
     try {
       const savedData = localStorage.getItem('savedProject');
       if (savedData) {
-        form.reset(JSON.parse(savedData));
+        const parsedData = JSON.parse(savedData);
+        // To be safe, merge with defaults in case saved data is from an older version
+        const defaultValues = formSchema.parse({});
+        form.reset({ ...defaultValues, ...parsedData });
         toast({ title: 'Proyecto cargado', description: 'Se ha cargado tu proyecto guardado.' });
       }
     } catch (error) {
@@ -376,7 +379,7 @@ export function CalculatorForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Tipo de Filamento</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecciona un tipo" />
@@ -540,8 +543,8 @@ export function CalculatorForm() {
                     <h3 className="font-semibold mb-2">Otros Costes</h3>
                       {fields.map((field, index) => (
                           <div key={field.id} className="flex items-end gap-2 mb-2">
-                          <FormField control={form.control} name={`otherCosts.${index}.name`} render={({ field }) => (<FormItem className="flex-grow"><FormLabel className={index > 0 ? 'sr-only' : ''}>Nombre del Artículo</FormLabel><FormControl><Input placeholder="Ej: Tornillos, Imanes" {...field} /></FormControl></FormItem>)} />
-                          <FormField control={form.control} name={`otherCosts.${index}.price`} render={({ field }) => (<FormItem><FormLabel className={index > 0 ? 'sr-only' : ''}>Precio</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                          <FormField control={form.control} name={`otherCosts.${index}.name`} render={({ field }) => (<FormItem className="flex-grow"><FormLabel className={index > 0 ? 'sr-only' : ''}>Nombre del Artículo</FormLabel><FormControl><Input placeholder="Ej: Tornillos, Imanes" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                          <FormField control={form.control} name={`otherCosts.${index}.price`} render={({ field }) => (<FormItem><FormLabel className={index > 0 ? 'sr-only' : ''}>Precio</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                           <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-destructive"><Trash2 size={16} /></Button>
                           </div>
                       ))}
