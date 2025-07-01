@@ -551,7 +551,7 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
         </Accordion>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
-            <Button type="button" onClick={handleSaveProject} variant="secondary" className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4"/> Guardar Proyecto</Button>
+            <Button type="button" onClick={handleSaveProject} variant="default" className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4"/> Guardar Proyecto</Button>
             <Button type="button" onClick={handleShare} variant="outline" className="w-full sm:w-auto"><Share2 className="mr-2 h-4 w-4"/> Compartir</Button>
             <Button type="button" onClick={handlePrint} className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90"><Printer className="mr-2 h-4 w-4"/> Imprimir Resumen</Button>
         </div>
