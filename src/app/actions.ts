@@ -45,9 +45,15 @@ export async function saveProject(uid: string, projectData: any) {
   
   const { id: projectId, ...data } = validated.data;
 
+  // Clean the data object to remove any 'undefined' values before saving to Firestore.
+  // Firestore cannot store 'undefined' and will throw an error.
+  const cleanData = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  );
+
   try {
     const dataToSave = {
-      ...data,
+      ...cleanData,
       updatedAt: serverTimestamp(),
     };
 
@@ -90,18 +96,20 @@ export async function getProjects(uid: string) {
             return {
                 id: doc.id,
                 ...data,
+                // Ensure timestamps are converted to a serializable format (ISO string)
                 createdAt: data.createdAt?.toDate?.().toISOString() || null,
                 updatedAt: data.updatedAt?.toDate?.().toISOString() || null,
             };
         });
 
+        // Sort by updatedAt descending to show the most recent projects first
         projects.sort((a, b) => {
             const timeA = a.updatedAt || '';
             const timeB = b.updatedAt || '';
             return timeB.localeCompare(timeA);
         });
 
-        return { data: projects };
+        return { data: JSON.parse(JSON.stringify(projects)) };
     } catch (e) {
         console.error("Error fetching projects: ", e);
         if (e instanceof Error) {

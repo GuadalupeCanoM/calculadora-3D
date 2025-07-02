@@ -251,9 +251,10 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
         toast({
           variant: "destructive",
           title: "Datos no válidos",
-          description: "Por favor, revisa los campos obligatorios.",
+          description: "Por favor, revisa los campos obligatorios marcados en rojo.",
         });
-        return; // finally will still run and set isSaving to false
+        // This return is crucial to stop the execution if validation fails.
+        return;
       }
       
       const formData = form.getValues();
@@ -266,8 +267,8 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           description: result.error,
         });
       } else if (result.success && result.id) {
-        const message = formData.id ? 'Proyecto actualizado' : 'Proyecto guardado con éxito';
-        toast({ title: message, description: `El proyecto "${formData.jobName}" ha sido guardado.` });
+        const message = formData.id ? 'Proyecto actualizado con éxito' : 'Proyecto guardado con éxito';
+        toast({ title: message, description: `Tu trabajo "${formData.jobName}" está a salvo.` });
         form.setValue('id', result.id);
       }
     } catch (error) {
@@ -278,6 +279,8 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
         description: "Ocurrió un error en la comunicación al guardar. Por favor, inténtalo de nuevo."
       });
     } finally {
+      // This block ensures the saving indicator is always turned off,
+      // whether the save succeeds or fails.
       setIsSaving(false);
     }
   };
