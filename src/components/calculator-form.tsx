@@ -253,10 +253,11 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           title: "Datos no válidos",
           description: "Por favor, revisa los campos obligatorios marcados en rojo.",
         });
-        return;
+        return; // The finally block will still run
       }
       
       const formData = form.getValues();
+      console.log("Datos a guardar:", formData);
       const result = await saveProject(user.uid, formData);
   
       if (result.error) {
@@ -268,17 +269,18 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
       } else if (result.success && result.id) {
         const message = formData.id ? 'Proyecto actualizado con éxito' : 'Proyecto guardado con éxito';
         toast({ title: message, description: `Tu trabajo "${formData.jobName}" está a salvo.` });
-        form.setValue('id', result.id);
+        form.setValue('id', result.id); // Update the form with the new ID
+        console.log("Guardado exitoso. ID:", result.id);
       }
     } catch (error) {
-      console.error("Error calling saveProject:", error);
+      console.error("Error inesperado al guardar el proyecto:", error);
       toast({
         variant: "destructive",
         title: "Error Inesperado",
         description: "Ocurrió un error en la comunicación al guardar. Por favor, inténtalo de nuevo."
       });
     } finally {
-      setIsSaving(false);
+      setIsSaving(false); // This will always run, preventing the button from getting stuck
     }
   };
 
