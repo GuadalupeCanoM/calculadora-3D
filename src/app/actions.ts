@@ -35,11 +35,15 @@ export async function handleAnalyzeGcode(formData: FormData) {
 }
 
 export async function saveProject(uid: string, projectData: any) {
-  if (!uid) return { error: 'Usuario no autenticado.' };
+  console.log("✔️ Entrando en saveProject en el servidor...");
+  if (!uid) {
+    console.error("❌ Error: Usuario no autenticado en saveProject.");
+    return { error: 'Usuario no autenticado.' };
+  }
 
   const validated = formSchema.safeParse(projectData);
   if (!validated.success) {
-    console.error('Save Project Validation Error:', validated.error.flatten());
+    console.error('❌ Error de validación en saveProject:', validated.error.flatten());
     return { error: 'Los datos del proyecto no son válidos. Revisa los campos marcados.' };
   }
   
@@ -57,22 +61,25 @@ export async function saveProject(uid: string, projectData: any) {
       updatedAt: serverTimestamp(),
     };
 
+    console.log("💾 Datos a guardar en Firestore:", dataToSave);
     const projectsCollection = collection(db, 'usuarios', uid, 'proyectos');
 
     if (projectId) {
+      console.log(`🔄 Actualizando proyecto con ID: ${projectId}`);
       const projectRef = doc(projectsCollection, projectId);
       await setDoc(projectRef, dataToSave, { merge: true });
-      const result = { success: true, id: projectId };
-      return JSON.parse(JSON.stringify(result));
+      console.log("✅ Proyecto actualizado con éxito.");
+      return { success: true, id: projectId };
     } else {
+      console.log("✨ Creando nuevo proyecto...");
       const newProjectData = { ...dataToSave, createdAt: serverTimestamp() };
       const newProjectRef = await addDoc(projectsCollection, newProjectData);
-      const result = { success: true, id: newProjectRef.id };
-      return JSON.parse(JSON.stringify(result));
+      console.log(`✅ Nuevo proyecto creado con ID: ${newProjectRef.id}`);
+      return { success: true, id: newProjectRef.id };
     }
 
   } catch (e) {
-    console.error("Error saving project to Firestore: ", e);
+    console.error("🔥 Error en saveProject al interactuar con Firestore:", e);
     if (e instanceof Error) {
       if (e.message.toLowerCase().includes('maximum size')) {
         return { error: 'El proyecto es demasiado grande para guardar. Prueba con una imagen más pequeña.' };
