@@ -143,9 +143,9 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
       const totalMinutes = Math.round(result.data.printingTimeSeconds / 60);
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
-      form.setValue('printingTimeHours', hours);
-      form.setValue('printingTimeMinutes', minutes);
-      form.setValue('filamentWeight', parseFloat(result.data.filamentWeightGrams.toFixed(2)));
+      form.setValue('printingTimeHours', hours, { shouldValidate: true });
+      form.setValue('printingTimeMinutes', minutes, { shouldValidate: true });
+      form.setValue('filamentWeight', parseFloat(result.data.filamentWeightGrams.toFixed(2)), { shouldValidate: true });
       toast({
         title: "Análisis Completado",
         description: "El tiempo de impresión y el peso del filamento han sido actualizados.",
@@ -243,32 +243,20 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
       return;
     }
   
-    // Use validated data to ensure all fields and defaults are correct
-    const rawData = form.getValues();
-    const validationResult = formSchema.safeParse(rawData);
-
-    if (!validationResult.success) {
-      toast({
-        variant: "destructive",
-        title: "Datos no válidos",
-        description: "Algunos datos del formulario son incorrectos. Por favor, revisa los campos.",
-      });
-      return;
-    }
-    
-    if (!validationResult.data.jobName || validationResult.data.jobName.trim() === '') {
-      toast({
-        variant: "destructive",
-        title: 'Nombre Requerido',
-        description: 'Por favor, introduce un nombre para el trabajo antes de guardarlo.',
-      });
-      return;
-    }
-
     setIsSaving(true);
     try {
-      // Pass the fully validated data to the server action
-      const result = await saveProject(user.uid, validationResult.data);
+      const isValid = await form.trigger();
+      if (!isValid) {
+        toast({
+          variant: "destructive",
+          title: "Datos no válidos",
+          description: "Por favor, revisa los campos obligatorios.",
+        });
+        return; // finally will still run and set isSaving to false
+      }
+      
+      const formData = form.getValues();
+      const result = await saveProject(user.uid, formData);
   
       if (result.error) {
         toast({
@@ -277,10 +265,8 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           description: result.error,
         });
       } else if (result.success && result.id) {
-        const message = rawData.id ? 'Proyecto actualizado' : 'Proyecto guardado';
-        toast({ title: message, description: `El proyecto "${validationResult.data.jobName}" ha sido guardado.` });
-        
-        // Update form with the ID so subsequent saves are updates
+        const message = formData.id ? 'Proyecto actualizado' : 'Proyecto guardado con éxito';
+        toast({ title: message, description: `El proyecto "${formData.jobName}" ha sido guardado.` });
         form.setValue('id', result.id);
       }
     } catch (error) {
@@ -332,6 +318,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                         <FormItem>
                           <FormLabel>Nombre del Trabajo</FormLabel>
                           <FormControl><Input placeholder="Ej: Benchy, Litofanía, etc." {...field} /></FormControl>
+                          <FormMessage />
                         </FormItem>
                       )} />
                       <FormField
@@ -447,7 +434,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                       <FormField control={form.control} name="filamentWeight" render={({ field }) => (
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Weight size={16}/> Peso del Filamento (gramos)</FormLabel>
-                          <FormControl><Input type="number" {...field} /></FormControl>
+                          <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
@@ -473,7 +460,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Tipo de Filamento</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecciona un tipo" />
@@ -492,7 +479,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                       )}
                     />
                     <FormField control={form.control} name="spoolPrice" render={({ field }) => (
-                        <FormItem><FormLabel>Precio de la Bobina</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Precio de la Bobina</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="spoolWeight" render={({ field }) => (
                         <FormItem><FormLabel>Peso de la Bobina (gramos)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>
@@ -527,7 +514,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                     <FormField control={form.control} name="energyCostKwh" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Coste de energía por kWh</FormLabel>
-                            <FormControl><Input type="number" placeholder="Ej: 0.15" {...field} /></FormControl>
+                            <FormControl><Input type="number" step="0.01" placeholder="Ej: 0.15" {...field} /></FormControl>
                             <FormDescription>El coste en la moneda seleccionada.</FormDescription>
                             <FormMessage/>
                         </FormItem>
@@ -676,5 +663,3 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
     </TooltipProvider>
   );
 }
-
-    
