@@ -1,8 +1,8 @@
-
 "use client";
 
 import React from 'react';
 import type { UseFormReturn } from 'react-hook-form';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
@@ -39,6 +39,11 @@ export const PrintSummary = ({ form, calculations }: PrintSummaryProps) => {
 
     return (
       <div className="p-8 font-body text-black bg-white">
+        <header className="flex items-center justify-between mb-8 border-b pb-4">
+            <h1 className="font-headline text-3xl font-bold text-primary">Calculadora de Luprintech</h1>
+            <Image src="/Logo.svg" alt="Logo de Luprintech" width={80} height={80} className="rounded-full" />
+        </header>
+
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Trabajo: {values.jobName || 'N/A'}</CardTitle>
