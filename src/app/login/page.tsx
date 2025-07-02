@@ -10,18 +10,14 @@ import { useRouter } from 'next/navigation';
 export default function LoginPage() {
   const { login, user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [year, setYear] = useState<number | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.push('/');
+      router.replace('/');
     }
   }, [user, authLoading, router]);
-
-  useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
   
   const handleLogin = async () => {
     setIsLoggingIn(true);
@@ -30,7 +26,7 @@ export default function LoginPage() {
 
   if (authLoading || user) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -72,7 +68,7 @@ export default function LoginPage() {
             <a href="https://www.tiktok.com/@luprintech" target="_blank" rel="noopener noreferrer" aria-label="Perfil de TikTok de Luprintech" className="text-muted-foreground hover:text-primary transition-colors"><TikTokIcon className="h-5 w-5" /></a>
         </div>
         <p className="mb-2">¿Tienes dudas? Escríbeme a <a href="mailto:info@luprintech.com" className="text-primary hover:underline">info@luprintech.com</a></p>
-        {year && <p>&copy; {year} Luprintech. Todos los derechos reservados.</p>}
+        <p>&copy; {currentYear} Luprintech. Todos los derechos reservados.</p>
       </footer>
     </main>
   );
