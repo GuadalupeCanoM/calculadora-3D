@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import Image from "next/image";
 import { formSchema, type FormData } from "@/lib/schema";
+import { defaultFormValues } from "@/lib/defaults";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +33,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { handleAnalyzeGcode } from "@/app/actions";
+import { handleAnalyzeGcode, saveProject } from "@/app/actions";
 import { PrintSummary } from "@/components/print-summary";
 import {
   UploadCloud,
@@ -49,15 +50,20 @@ import {
   Wrench,
   Zap,
   ImagePlus,
+  Save,
+  FilePlus,
 } from "lucide-react";
 import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useAuth } from "@/context/auth-context";
 
 export { formSchema, type FormData };
 
 export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -115,6 +121,52 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const calculations = {
     filamentCost, electricityCost, laborCost, currentMachineCost, otherCostsTotal, subTotal,
     profitAmount, priceBeforeVat, vatAmount, finalPrice,
+  };
+
+  const handleNewProject = () => {
+    form.reset(defaultFormValues);
+    toast({ title: "Nuevo proyecto", description: "El formulario ha sido limpiado." });
+  }
+
+  const handleSaveProject = async () => {
+    if (!user) {
+      toast({ variant: "destructive", title: "Debes iniciar sesión para guardar." });
+      return;
+    }
+
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast({
+        variant: "destructive",
+        title: "Faltan campos obligatorios",
+        description: "Por favor, completa todos los campos marcados con *.",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    const formData = form.getValues();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...dataToSave } = formData;
+    
+    // CRITICAL FIX: Ensure the data is a plain JSON object before sending to the server action.
+    const cleanData = JSON.parse(JSON.stringify(dataToSave));
+
+    try {
+      const result = await saveProject(user.uid, cleanData);
+
+      if (result.error) {
+        toast({ variant: "destructive", title: "Error al guardar", description: result.error });
+      } else {
+        toast({ title: "¡Guardado correctamente!" });
+        form.reset(defaultFormValues);
+      }
+    } catch (err) {
+      console.error("Unexpected error saving project:", err);
+      toast({ variant: "destructive", title: "Ha ocurrido un error inesperado." });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
 
@@ -579,6 +631,13 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           </Accordion>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
+              <Button onClick={handleNewProject} variant="outline" size="default" className="w-full sm:w-auto">
+                  <FilePlus className="mr-2 h-4 w-4" /> Nuevo Proyecto
+              </Button>
+              <Button onClick={handleSaveProject} disabled={isSaving} size="default" className="w-full sm:w-auto">
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                {isSaving ? 'Guardando...' : 'Guardar Proyecto'}
+              </Button>
               <Button type="button" onClick={handleShare} variant="outline" className="w-full sm:w-auto"><Share2 className="mr-2 h-4 w-4"/> Compartir</Button>
               <Button type="button" onClick={handlePrint} className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/80 transition-transform hover:scale-105"><Printer className="mr-2 h-4 w-4"/> Imprimir Resumen</Button>
           </div>

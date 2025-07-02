@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { CalculatorForm } from "@/components/calculator-form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Github, Youtube, Instagram, LogOut, Save, FolderOpen, Loader2, FilePlus } from "lucide-react";
+import { Github, Youtube, Instagram, LogOut, FolderOpen } from "lucide-react";
 import { TikTokIcon } from "@/components/icons";
 import { formSchema, type FormData } from "@/lib/schema";
 import { defaultFormValues } from "@/lib/defaults";
@@ -13,8 +13,6 @@ import { ProtectedRoute } from "@/components/protected-route";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useToast } from '@/hooks/use-toast';
-import { saveProject } from '@/app/actions';
 import { SavedProjectsDialog } from '@/components/saved-projects-dialog';
 
 function HomePageContent() {
@@ -23,57 +21,7 @@ function HomePageContent() {
     defaultValues: defaultFormValues,
   });
   const { user, logout } = useAuth();
-  const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
   const currentYear = new Date().getFullYear();
-
-  const handleSaveProject = async () => {
-    if (!user) {
-      toast({ variant: "destructive", title: "Debes iniciar sesión para guardar." });
-      return;
-    }
-
-    const isValid = await form.trigger();
-    if (!isValid) {
-      toast({
-        variant: "destructive",
-        title: "Faltan campos obligatorios",
-        description: "Por favor, completa todos los campos marcados con *.",
-      });
-      return;
-    }
-
-    setIsSaving(true);
-    const formData = form.getValues();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, ...dataToSave } = formData;
-    
-    // CRITICAL FIX: Ensure the data is a plain JSON object before sending to the server action.
-    // This prevents non-serializable data from react-hook-form from causing issues.
-    const cleanData = JSON.parse(JSON.stringify(dataToSave));
-
-    try {
-      const result = await saveProject(user.uid, cleanData);
-
-      if (result.error) {
-        toast({ variant: "destructive", title: "Error al guardar", description: result.error });
-      } else {
-        toast({ title: "¡Proyecto guardado con éxito!" });
-        // After saving, reset to a new project form
-        form.reset(defaultFormValues);
-      }
-    } catch (err) {
-      console.error("Unexpected error saving project:", err);
-      toast({ variant: "destructive", title: "Ha ocurrido un error inesperado." });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleNewProject = () => {
-    form.reset(defaultFormValues);
-    toast({ title: "Nuevo proyecto", description: "El formulario ha sido limpiado." });
-  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-8 md:p-12">
@@ -115,15 +63,6 @@ function HomePageContent() {
 
         <CalculatorForm form={form} />
 
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-end w-full print:hidden">
-            <Button onClick={handleNewProject} variant="outline" size="default" className="w-full sm:w-auto">
-                <FilePlus className="mr-2 h-4 w-4" /> Nuevo Proyecto
-            </Button>
-            <Button onClick={handleSaveProject} disabled={isSaving} size="default" className="w-full sm:w-auto">
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              {isSaving ? 'Guardando...' : 'Guardar Proyecto'}
-            </Button>
-        </div>
       </div>
       
       <footer className="w-full py-6 text-center text-sm text-muted-foreground print:hidden mt-12">
