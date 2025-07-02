@@ -1,12 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import type { User } from 'firebase/auth';
-import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
+
+// La funcionalidad de Firebase ha sido eliminada. Este es un mock para prevenir errores de compilación.
+type User = object | null;
 
 interface AuthContextType {
-  user: User | null;
+  user: User;
   loading: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
@@ -15,32 +15,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const [user, setUser] = useState<User>(null);
+  const [loading, setLoading] = useState(false);
 
   const login = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
-    }
+    console.warn("La funcionalidad de inicio de sesión ha sido eliminada.");
   };
 
   const logout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error signing out", error);
-    }
+    console.warn("La funcionalidad de inicio de sesión ha sido eliminada.");
   };
 
   return (
@@ -50,10 +33,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    // Como el AuthProvider ya no se usa en el layout, cualquier llamada a useAuth fallaría.
+    // Devolvemos un mock para que los componentes que aún lo usan (aunque no deberían) no rompan la compilación.
+    return {
+      user: null,
+      loading: false,
+      login: async () => console.warn("La funcionalidad de inicio de sesión ha sido eliminada."),
+      logout: async () => console.warn("La funcionalidad de inicio de sesión ha sido eliminada."),
+    };
   }
   return context;
 };

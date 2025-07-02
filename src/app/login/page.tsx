@@ -1,44 +1,23 @@
 'use client';
 
-import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
-import React, { useState, useEffect } from 'react';
-import { Github, Youtube, Instagram, Loader2 } from 'lucide-react';
+import React from 'react';
+import { Github, Youtube, Instagram } from 'lucide-react';
 import { GoogleIcon, TikTokIcon } from '@/components/icons';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image'; // 👈 Importación del componente Image
+import Image from 'next/image';
 
 export default function LoginPage() {
-  const { login, user, loading: authLoading } = useAuth();
-  const router = useRouter();
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      router.replace('/');
-    }
-  }, [user, authLoading, router]);
-
-  const handleLogin = async () => {
-    setIsLoggingIn(true);
-    await login();
+  const handleLogin = () => {
+    console.warn("La funcionalidad de inicio de sesión ha sido eliminada.");
   };
-
-  if (authLoading || user) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between bg-background p-4 sm:p-8">
       <div className="flex w-full flex-grow items-center justify-center">
         <div className="w-full max-w-md text-center animate-fade-in">
           
-          {/* 👇 Logo circular con sombra 👇 */}
           <Image
             src="/Logo.svg"
             alt="Logo de Luprintech"
@@ -64,13 +43,14 @@ export default function LoginPage() {
           <div className="mt-8">
             <Button
               onClick={handleLogin}
-              disabled={isLoggingIn}
               className="w-full rounded-2xl shadow-md transition-all hover:shadow-lg"
               size="lg"
+              disabled
             >
               <GoogleIcon className="mr-3 h-6 w-6" />
-              {isLoggingIn ? 'Iniciando sesión...' : 'Iniciar sesión con Google'}
+              Iniciar sesión con Google
             </Button>
+             <p className="text-xs text-muted-foreground mt-2">La funcionalidad de inicio de sesión ha sido deshabilitada.</p>
           </div>
         </div>
       </div>
