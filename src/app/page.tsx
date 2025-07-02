@@ -19,6 +19,7 @@ function HomePageContent() {
     defaultValues: defaultFormValues,
   });
   const { user, logout } = useAuth();
+  const currentYear = new Date().getFullYear();
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-8 md:p-12">
@@ -108,7 +109,7 @@ function HomePageContent() {
             info@luprintech.com
           </a>
         </p>
-        <p>&copy; 2025 Luprintech. Todos los derechos reservados.</p>
+        <p>&copy; {currentYear} Guadalupe Cano. Todos los derechos reservados.</p>
       </footer>
     </main>
   );

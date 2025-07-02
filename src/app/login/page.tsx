@@ -108,7 +108,7 @@ export default function LoginPage() {
             info@luprintech.com
           </a>
         </p>
-        <p>&copy; {currentYear} Luprintech. Todos los derechos reservados.</p>
+        <p>&copy; {currentYear} Guadalupe Cano. Todos los derechos reservados.</p>
       </footer>
     </main>
   );
