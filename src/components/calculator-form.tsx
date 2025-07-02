@@ -33,7 +33,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { handleAnalyzeGcode } from "@/app/actions";
+import { handleAnalyzeGcode, saveProject } from "@/app/actions";
 import { PrintSummary } from "@/components/print-summary";
 import {
   UploadCloud,
@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useAuth } from "@/context/auth-context";
 
 export const formSchema = z.object({
   jobName: z.string().optional().default(""),
@@ -85,10 +86,9 @@ export const formSchema = z.object({
 
 export type FormData = z.infer<typeof formSchema>;
 
-const STORAGE_PREFIX = 'luprintech-calc-project:';
-
 export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -225,7 +225,8 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
     `;
 
     if(watchedValues.includeMachineCosts) {
-      summaryText += `\nCoste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
+      summaryText += `
+Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
     }
 
     summaryText += `
@@ -245,22 +246,28 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
           text: summaryText.trim(),
         });
       } catch (error) {
-        // No hacer nada si el usuario cancela la acción de compartir.
         if (error instanceof DOMException && error.name === 'AbortError') {
             return;
         }
-        // Como alternativa, copiar al portapapeles para otros errores.
         await navigator.clipboard.writeText(summaryText.trim());
         toast({ title: 'Resumen copiado al portapapeles.' });
       }
     } else {
-        // Alternativa para navegadores no compatibles.
         await navigator.clipboard.writeText(summaryText.trim());
         toast({ title: 'Resumen copiado al portapapeles.' });
     }
   };
 
-  const handleSaveProject = () => {
+  const handleSaveProject = async () => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: 'Error de Autenticación',
+        description: 'Debes iniciar sesión para guardar un proyecto.',
+      });
+      return;
+    }
+
     const data = form.getValues();
     if (!data.jobName || data.jobName.trim() === '') {
       toast({
@@ -270,13 +277,17 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
       });
       return;
     }
-    try {
-      const key = `${STORAGE_PREFIX}${data.jobName}`;
-      localStorage.setItem(key, JSON.stringify(data));
-      toast({ title: 'Proyecto guardado', description: `El proyecto "${data.jobName}" ha sido guardado.` });
-    } catch (error) {
-      console.error("Failed to save project to localStorage", error);
-      toast({ variant: "destructive", title: 'Error al guardar', description: 'No se pudo guardar el proyecto.' });
+    
+    const result = await saveProject(user.uid, data);
+
+    if (result.error) {
+       toast({
+        variant: "destructive",
+        title: 'Error al guardar',
+        description: result.error,
+      });
+    } else {
+       toast({ title: 'Proyecto guardado', description: `El proyecto "${data.jobName}" ha sido guardado en la nube.` });
     }
   };
 

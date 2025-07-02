@@ -15,14 +15,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from './ui/scroll-area';
-import { Trash2, FolderUp, ImageIcon } from 'lucide-react';
+import { Trash2, FolderUp, ImageIcon, Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import type { FormData } from './calculator-form';
-
-const STORAGE_PREFIX = 'luprintech-calc-project:';
+import { useAuth } from '@/context/auth-context';
+import { getProjects, deleteProject } from '@/app/actions';
 
 interface SavedProject {
-  key: string;
+  id: string;
   name: string;
   data: FormData;
 }
@@ -36,38 +36,36 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [projects, setProjects] = useState<SavedProject[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (isOpen) {
-      const savedProjects: SavedProject[] = [];
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith(STORAGE_PREFIX)) {
-                const item = localStorage.getItem(key);
-                if (item) {
-                  const data = JSON.parse(item);
-                  savedProjects.push({
-                    key,
-                    name: data.jobName || 'Proyecto sin nombre',
-                    data,
-                  });
-                }
-            }
-          }
-          setProjects(savedProjects.sort((a, b) => a.name.localeCompare(b.name)));
+    const fetchProjects = async () => {
+      if (isOpen && user) {
+        setIsLoading(true);
+        const result = await getProjects(user.uid);
+        
+        if (result.error) {
+           toast({
+             variant: "destructive",
+             title: "Error al cargar",
+             description: result.error,
+           });
+           setProjects([]);
+        } else if (result.data) {
+           const formattedProjects: SavedProject[] = result.data.map((p: any) => ({
+             id: p.id,
+             name: p.jobName || 'Proyecto sin nombre',
+             data: p as FormData,
+           }));
+           setProjects(formattedProjects);
         }
-      } catch (error) {
-        console.error("Error al cargar proyectos guardados:", error);
-        toast({
-          variant: "destructive",
-          title: "Error al cargar",
-          description: "No se pudieron cargar los proyectos guardados.",
-        });
+        setIsLoading(false);
       }
-    }
-  }, [isOpen, toast]);
+    };
+
+    fetchProjects();
+  }, [isOpen, user, toast]);
 
   const handleLoadProject = (project: SavedProject) => {
     form.reset(project.data);
@@ -78,20 +76,21 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
     setIsOpen(false);
   };
 
-  const handleDeleteProject = (project: SavedProject) => {
-    try {
-      localStorage.removeItem(project.key);
-      setProjects(projects.filter((p) => p.key !== project.key));
-      toast({
-        title: 'Proyecto Eliminado',
-        description: `El proyecto "${project.name}" ha sido eliminado.`,
-      });
-    } catch (error) {
-      console.error("Error al eliminar el proyecto:", error);
-      toast({
+  const handleDeleteProject = async (project: SavedProject) => {
+    if (!user) return;
+    const result = await deleteProject(user.uid, project.id);
+    
+    if (result.error) {
+       toast({
         variant: "destructive",
         title: "Error al eliminar",
-        description: "No se pudo eliminar el proyecto.",
+        description: result.error,
+      });
+    } else {
+      setProjects(projects.filter((p) => p.id !== project.id));
+      toast({
+        title: 'Proyecto Eliminado',
+        description: `El proyecto "${project.name}" ha sido eliminado de la nube.`,
       });
     }
   };
@@ -105,15 +104,19 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
         <DialogHeader>
           <DialogTitle>Proyectos Guardados</DialogTitle>
           <DialogDescription>
-            Selecciona un proyecto guardado para cargarlo en la calculadora.
+            Selecciona un proyecto guardado en la nube para cargarlo en la calculadora.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-72 w-full rounded-md border">
           <div className="p-4">
-            {projects.length > 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : projects.length > 0 ? (
               <ul className="space-y-2">
                 {projects.map((project) => (
-                  <li key={project.key} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
+                  <li key={project.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       {project.data.projectImage ? (
                         <Image
@@ -144,7 +147,7 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
                               <AlertDialogHeader>
                                   <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                      Esta acción no se puede deshacer. Esto eliminará permanentemente el proyecto "{project.name}".
+                                      Esta acción no se puede deshacer. Esto eliminará permanentemente el proyecto "{project.name}" de la nube.
                                   </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -159,7 +162,7 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
               </ul>
             ) : (
               <div className="flex items-center justify-center h-full">
-                <p className="text-center text-muted-foreground py-10">No hay proyectos guardados.</p>
+                <p className="text-center text-muted-foreground py-10">No hay proyectos guardados en la nube.</p>
               </div>
             )}
           </div>
