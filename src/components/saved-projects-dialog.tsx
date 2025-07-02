@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from './ui/scroll-area';
 import { Trash2, FolderUp, ImageIcon, Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
-import type { FormData } from './calculator-form';
+import type { FormData } from '@/lib/schema';
 import { useAuth } from '@/context/auth-context';
 import { getProjects, deleteProject } from '@/app/actions';
 

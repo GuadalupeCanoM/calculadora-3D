@@ -4,6 +4,7 @@
 import { analyzeGcode } from '@/ai/flows/gcode-analyzer';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, deleteDoc, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { formSchema } from '@/lib/schema';
 
 async function blobToDataURI(blob: Blob): Promise<string> {
     const buffer = Buffer.from(await blob.arrayBuffer());
@@ -35,39 +36,44 @@ export async function handleAnalyzeGcode(formData: FormData) {
 
 export async function saveProject(uid: string, projectData: any) {
   if (!uid) return { error: 'Usuario no autenticado.' };
-  if (!projectData.jobName || !projectData.jobName.trim()) {
+
+  // Server-side validation
+  const validated = formSchema.safeParse(projectData);
+  if (!validated.success) {
+    console.error('Save Project Validation Error:', validated.error);
+    return { error: 'Los datos del proyecto no son válidos.' };
+  }
+  
+  const { id: projectId, ...data } = validated.data;
+
+  if (!data.jobName || !data.jobName.trim()) {
     return { error: 'El nombre del trabajo es obligatorio.' };
   }
 
   try {
-    const dataToSave = { ...projectData };
-    const projectId = dataToSave.id;
-    // Do not save the id as a field in the document itself
-    delete dataToSave.id;
+    const dataToSave = {
+      ...data,
+      updatedAt: serverTimestamp(),
+    };
 
     const projectsCollection = collection(db, 'usuarios', uid, 'proyectos');
 
     if (projectId) {
       // Update existing project
       const projectRef = doc(projectsCollection, projectId);
-      await setDoc(projectRef, {
-        ...dataToSave,
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
+      await setDoc(projectRef, dataToSave, { merge: true });
       return { success: true, id: projectId };
-
     } else {
       // Create new project
       const newProjectRef = await addDoc(projectsCollection, {
         ...dataToSave,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
       });
       return { success: true, id: newProjectRef.id };
     }
 
   } catch (e) {
-    console.error("Error saving project: ", e);
+    console.error("Error saving project to Firestore: ", e);
     if (e instanceof Error) {
       if (e.message.toLowerCase().includes('maximum size')) {
         return { error: 'El proyecto es demasiado grande para guardar. Prueba con una imagen más pequeña.' };
