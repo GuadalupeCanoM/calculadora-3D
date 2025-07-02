@@ -1,6 +1,6 @@
 "use client";
 
-import { CalculatorForm, formSchema, type FormData } from "@/components/calculator-form";
+import { CalculatorForm } from "@/components/calculator-form";
 import { SavedProjectsDialog } from "@/components/saved-projects-dialog";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
@@ -10,11 +10,13 @@ import { ProtectedRoute } from "@/components/protected-route";
 import { useAuth } from "@/context/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TikTokIcon } from "@/components/icons";
+import { formSchema, type FormData } from "@/lib/schema";
+import { defaultFormValues } from "@/lib/defaults";
 
 function HomePageContent() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: formSchema.parse({}),
+    defaultValues: defaultFormValues,
   });
   const { user, logout } = useAuth();
 

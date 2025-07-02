@@ -5,6 +5,7 @@ import React, { useState, useRef } from "react";
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import Image from "next/image";
 import { formSchema, type FormData } from "@/lib/schema";
+import { defaultFormValues } from "@/lib/defaults";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -284,7 +285,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
   const handleNewProject = () => {
     // Preserves the selected currency, resets everything else to defaults
     form.reset({
-      ...formSchema.parse({}), // Get all default values
+      ...defaultFormValues, // Use the new defaults object
       currency: form.getValues('currency'), // Keep the current currency
     });
     toast({
