@@ -14,6 +14,7 @@ export default function LoginPage() {
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
+    // If auth is done and we have a user, go to the main page.
     if (!authLoading && user) {
       router.replace('/');
     }
@@ -22,9 +23,20 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setIsLoggingIn(true);
     await login();
+    // No need to set isLoggingIn back to false, as the component will unmount/redirect.
   };
 
-  if (authLoading || user) {
+  // While checking auth, show a spinner.
+  if (authLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  // If user is logged in, it means we are about to redirect. Show a spinner.
+  if (user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -32,6 +44,8 @@ export default function LoginPage() {
     );
   }
 
+
+  // If auth is done and there's no user, show the login page.
   return (
     <main className="flex min-h-screen flex-col items-center justify-between bg-background p-4 sm:p-8">
       <div className="flex w-full flex-grow items-center justify-center">
