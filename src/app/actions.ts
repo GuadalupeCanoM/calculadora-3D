@@ -40,8 +40,8 @@ export async function saveProject(uid: string, projectData: any) {
   // Server-side validation
   const validated = formSchema.safeParse(projectData);
   if (!validated.success) {
-    console.error('Save Project Validation Error:', validated.error);
-    return { error: 'Los datos del proyecto no son válidos.' };
+    console.error('Save Project Validation Error:', validated.error.flatten());
+    return { error: 'Los datos del proyecto no son válidos. Revisa los campos marcados.' };
   }
   
   const { id: projectId, ...data } = validated.data;
@@ -62,14 +62,18 @@ export async function saveProject(uid: string, projectData: any) {
       // Update existing project
       const projectRef = doc(projectsCollection, projectId);
       await setDoc(projectRef, dataToSave, { merge: true });
-      return { success: true, id: projectId };
+      const result = { success: true, id: projectId };
+      // By forcing the result through JSON serialization and parsing,
+      // we ensure it's a clean object that won't cause the client promise to hang.
+      return JSON.parse(JSON.stringify(result));
     } else {
       // Create new project
-      const newProjectRef = await addDoc(projectsCollection, {
-        ...dataToSave,
-        createdAt: serverTimestamp(),
-      });
-      return { success: true, id: newProjectRef.id };
+      const newProjectData = { ...dataToSave, createdAt: serverTimestamp() };
+      const newProjectRef = await addDoc(projectsCollection, newProjectData);
+      const result = { success: true, id: newProjectRef.id };
+      // By forcing the result through JSON serialization and parsing,
+      // we ensure it's a clean object that won't cause the client promise to hang.
+      return JSON.parse(JSON.stringify(result));
     }
 
   } catch (e) {
