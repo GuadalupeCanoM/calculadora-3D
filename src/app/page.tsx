@@ -9,6 +9,7 @@ import { FolderOpen, Github, Youtube, Instagram, LogOut } from "lucide-react";
 import { ProtectedRoute } from "@/components/protected-route";
 import { useAuth } from "@/context/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TikTokIcon } from "@/components/icons";
 
 function HomePageContent() {
   const form = useForm<FormData>({
@@ -67,13 +68,7 @@ function HomePageContent() {
             <Instagram className="h-5 w-5" />
           </a>
           <a href="https://www.tiktok.com/@luprintech" target="_blank" rel="noopener noreferrer" aria-label="Perfil de TikTok de Luprintech" className="text-muted-foreground hover:text-primary transition-colors">
-            <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-5 w-5"
-            >
-                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-2.43.03-4.83-.95-6.43-2.88-1.59-1.94-2.2-4.42-1.8-6.83.39-2.4 1.8-4.54 3.69-6.02.85-.67 1.78-1.25 2.76-1.74.04-1.57.02-3.14.01-4.71.13-1.09.43-2.16.92-3.12C8.86.93 10.63.15 12.525.02Z" />
-            </svg>
+            <TikTokIcon className="h-5 w-5" />
           </a>
         </div>
       </footer>
