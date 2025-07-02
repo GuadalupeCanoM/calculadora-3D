@@ -90,6 +90,7 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -278,16 +279,27 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
       return;
     }
     
-    const result = await saveProject(user.uid, data);
+    setIsSaving(true);
+    try {
+      const result = await saveProject(user.uid, data);
 
-    if (result.error) {
-       toast({
-        variant: "destructive",
-        title: 'Error al guardar',
-        description: result.error,
-      });
-    } else {
-       toast({ title: 'Proyecto guardado', description: `El proyecto "${data.jobName}" ha sido guardado en la nube.` });
+      if (result.error) {
+        toast({
+          variant: "destructive",
+          title: 'Error al guardar',
+          description: result.error,
+        });
+      } else {
+        toast({ title: 'Proyecto guardado', description: `El proyecto "${data.jobName}" ha sido guardado en la nube.` });
+      }
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Error Inesperado",
+            description: "Ocurrió un error en la comunicación al guardar. Por favor, inténtalo de nuevo."
+        });
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -641,7 +653,10 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           </Accordion>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
-              <Button type="button" onClick={handleSaveProject} variant="default" className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4"/> Guardar Proyecto</Button>
+              <Button type="button" onClick={handleSaveProject} disabled={isSaving} variant="default" className="w-full sm:w-auto">
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>}
+                {isSaving ? 'Guardando...' : 'Guardar Proyecto'}
+              </Button>
               <Button type="button" onClick={handleShare} variant="outline" className="w-full sm:w-auto"><Share2 className="mr-2 h-4 w-4"/> Compartir</Button>
               <Button type="button" onClick={handlePrint} className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90"><Printer className="mr-2 h-4 w-4"/> Imprimir Resumen</Button>
           </div>

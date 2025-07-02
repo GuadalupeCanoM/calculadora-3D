@@ -2,7 +2,7 @@
 
 import { analyzeGcode } from '@/ai/flows/gcode-analyzer';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, deleteDoc, setDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 async function blobToDataURI(blob: Blob): Promise<string> {
     const buffer = Buffer.from(await blob.arrayBuffer());
@@ -60,12 +60,24 @@ export async function getProjects(uid: string) {
 
     try {
         const projectsRef = collection(db, 'usuarios', uid, 'proyectos');
-        const q = query(projectsRef, orderBy('updatedAt', 'desc'));
-        const querySnapshot = await getDocs(q);
+        // The orderBy clause would require a custom index in Firestore.
+        // To avoid this manual step for the user, we fetch all documents
+        // and sort them on the server before sending them to the client.
+        const querySnapshot = await getDocs(projectsRef);
         const projects = querySnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
+
+        // Sort projects by 'updatedAt' in descending order.
+        // The `toDate()` method converts a Firestore Timestamp to a JS Date.
+        // We provide a fallback for documents that might not have the field yet.
+        projects.sort((a: any, b: any) => {
+            const timeA = a.updatedAt?.toDate?.() || new Date(0);
+            const timeB = b.updatedAt?.toDate?.() || new Date(0);
+            return timeB.getTime() - timeA.getTime();
+        });
+
         return { data: projects };
     } catch (e) {
         console.error("Error fetching projects: ", e);
