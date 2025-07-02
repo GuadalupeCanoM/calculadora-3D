@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import Image from "next/image";
 import { formSchema, type FormData } from "@/lib/schema";
@@ -72,6 +72,24 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
     control: form.control,
     name: "otherCosts",
   });
+
+  useEffect(() => {
+    const tempProject = sessionStorage.getItem("proyectoTemporal");
+    if (tempProject) {
+      try {
+        const parsedProject = JSON.parse(tempProject);
+        form.reset(parsedProject);
+        toast({
+          title: "Proyecto restaurado",
+          description: "Se ha recuperado tu trabajo no guardado de la sesión anterior.",
+        });
+      } catch (error) {
+        console.error("Failed to parse project from sessionStorage", error);
+        sessionStorage.removeItem("proyectoTemporal");
+      }
+    }
+  }, [form, toast]);
+
 
   const watchedValues = form.watch();
 
@@ -238,26 +256,29 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
     if (!user) {
       toast({
         variant: "destructive",
-        title: 'Error de Autenticación',
-        description: 'Debes iniciar sesión para guardar un proyecto.',
+        title: "Error de Autenticación",
+        description: "Debes iniciar sesión para guardar un proyecto.",
       });
       return;
     }
-  
+
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast({
+        variant: "destructive",
+        title: "Datos no válidos",
+        description: "Por favor, revisa los campos obligatorios marcados en rojo.",
+      });
+      return;
+    }
+    
+    const formData = form.getValues();
+    
     setIsSaving(true);
+    sessionStorage.setItem("proyectoTemporal", JSON.stringify(formData));
+    console.log("Datos a guardar:", formData);
+
     try {
-      const isValid = await form.trigger();
-      if (!isValid) {
-        toast({
-          variant: "destructive",
-          title: "Datos no válidos",
-          description: "Por favor, revisa los campos obligatorios marcados en rojo.",
-        });
-        return; // The finally block will still run
-      }
-      
-      const formData = form.getValues();
-      console.log("Datos a guardar:", formData);
       const result = await saveProject(user.uid, formData);
   
       if (result.error) {
@@ -269,18 +290,21 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
       } else if (result.success && result.id) {
         const message = formData.id ? 'Proyecto actualizado con éxito' : 'Proyecto guardado con éxito';
         toast({ title: message, description: `Tu trabajo "${formData.jobName}" está a salvo.` });
-        form.setValue('id', result.id); // Update the form with the new ID
+        form.setValue('id', result.id, { shouldValidate: true });
+        sessionStorage.removeItem("proyectoTemporal");
         console.log("Guardado exitoso. ID:", result.id);
+      } else {
+        throw new Error("Respuesta inesperada del servidor.");
       }
     } catch (error) {
       console.error("Error inesperado al guardar el proyecto:", error);
       toast({
         variant: "destructive",
         title: "Error Inesperado",
-        description: "Ocurrió un error en la comunicación al guardar. Por favor, inténtalo de nuevo."
+        description: error instanceof Error ? error.message : "Ocurrió un error en la comunicación al guardar."
       });
     } finally {
-      setIsSaving(false); // This will always run, preventing the button from getting stuck
+      setIsSaving(false);
     }
   };
 
@@ -289,6 +313,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
       ...defaultFormValues,
       currency: form.getValues('currency'),
     });
+    sessionStorage.removeItem("proyectoTemporal");
     toast({
       title: "Formulario Limpiado",
       description: "Puedes empezar a calcular un nuevo proyecto.",

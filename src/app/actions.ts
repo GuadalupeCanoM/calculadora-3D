@@ -3,7 +3,7 @@
 
 import { analyzeGcode } from '@/ai/flows/gcode-analyzer';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, deleteDoc, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, deleteDoc, setDoc, addDoc } from 'firebase/firestore';
 import { formSchema } from '@/lib/schema';
 
 async function blobToDataURI(blob: Blob): Promise<string> {
@@ -58,7 +58,8 @@ export async function saveProject(uid: string, projectData: any) {
   try {
     const dataToSave = {
       ...cleanData,
-      updatedAt: serverTimestamp(),
+      uid, // Add UID to the document itself, good practice
+      updatedAt: new Date(), // Using new Date() for safer serialization
     };
 
     console.log("💾 Datos a guardar en Firestore:", dataToSave);
@@ -72,7 +73,7 @@ export async function saveProject(uid: string, projectData: any) {
       return { success: true, id: projectId };
     } else {
       console.log("✨ Creando nuevo proyecto...");
-      const newProjectData = { ...dataToSave, createdAt: serverTimestamp() };
+      const newProjectData = { ...dataToSave, createdAt: new Date() };
       const newProjectRef = await addDoc(projectsCollection, newProjectData);
       console.log(`✅ Nuevo proyecto creado con ID: ${newProjectRef.id}`);
       return { success: true, id: newProjectRef.id };
