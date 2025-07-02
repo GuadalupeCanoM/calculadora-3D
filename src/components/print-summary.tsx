@@ -5,6 +5,8 @@ import type { UseFormReturn } from 'react-hook-form';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Github, Youtube, Instagram } from 'lucide-react';
+import { TikTokIcon } from './icons';
 
 interface PrintSummaryProps {
   form: UseFormReturn<any>;
@@ -78,6 +80,23 @@ export const PrintSummary = ({ form, calculations }: PrintSummaryProps) => {
             </CardContent>
           </Card>
         </div>
+         <footer className="mt-12 pt-6 border-t text-center text-gray-800">
+          <p className="font-semibold text-lg mb-2">@luprintech</p>
+          <div className="flex justify-center gap-4 text-gray-600">
+              <a href="https://github.com/GuadalupeCanoM" target="_blank" rel="noopener noreferrer" aria-label="GitHub de Guadalupe Cano" className="hover:text-primary transition-colors">
+                  <Github className="h-6 w-6" />
+              </a>
+              <a href="https://www.youtube.com/@Luprintech" target="_blank" rel="noopener noreferrer" aria-label="Canal de YouTube de Luprintech" className="hover:text-primary transition-colors">
+                  <Youtube className="h-6 w-6" />
+              </a>
+              <a href="https://www.instagram.com/luprintech/" target="_blank" rel="noopener noreferrer" aria-label="Perfil de Instagram de Luprintech" className="hover:text-primary transition-colors">
+                  <Instagram className="h-6 w-6" />
+              </a>
+              <a href="https://www.tiktok.com/@luprintech" target="_blank" rel="noopener noreferrer" aria-label="Perfil de TikTok de Luprintech" className="hover:text-primary transition-colors">
+                  <TikTokIcon className="h-6 w-6" />
+              </a>
+          </div>
+        </footer>
       </div>
     );
   };
