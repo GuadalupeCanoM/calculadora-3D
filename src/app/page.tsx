@@ -47,7 +47,7 @@ function HomePageContent() {
         <div className="flex justify-center mb-8 print:hidden">
             <SavedProjectsDialog form={form}>
                <Button variant="outline">
-                   <FolderOpen className="mr-2 h-4 w-4" /> Cargar Proyecto
+                   <FolderOpen className="mr-2 h-4 w-4" /> Proyectos Guardados
                </Button>
             </SavedProjectsDialog>
         </div>

@@ -103,7 +103,7 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Cargar Proyecto</DialogTitle>
+          <DialogTitle>Proyectos Guardados</DialogTitle>
           <DialogDescription>
             Selecciona un proyecto guardado para cargarlo en la calculadora.
           </DialogDescription>
