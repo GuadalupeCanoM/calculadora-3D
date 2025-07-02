@@ -37,7 +37,6 @@ export async function handleAnalyzeGcode(formData: FormData) {
 export async function saveProject(uid: string, projectData: any) {
   if (!uid) return { error: 'Usuario no autenticado.' };
 
-  // Server-side validation
   const validated = formSchema.safeParse(projectData);
   if (!validated.success) {
     console.error('Save Project Validation Error:', validated.error.flatten());
@@ -45,10 +44,6 @@ export async function saveProject(uid: string, projectData: any) {
   }
   
   const { id: projectId, ...data } = validated.data;
-
-  if (!data.jobName || !data.jobName.trim()) {
-    return { error: 'El nombre del trabajo es obligatorio.' };
-  }
 
   try {
     const dataToSave = {
@@ -59,20 +54,14 @@ export async function saveProject(uid: string, projectData: any) {
     const projectsCollection = collection(db, 'usuarios', uid, 'proyectos');
 
     if (projectId) {
-      // Update existing project
       const projectRef = doc(projectsCollection, projectId);
       await setDoc(projectRef, dataToSave, { merge: true });
       const result = { success: true, id: projectId };
-      // By forcing the result through JSON serialization and parsing,
-      // we ensure it's a clean object that won't cause the client promise to hang.
       return JSON.parse(JSON.stringify(result));
     } else {
-      // Create new project
       const newProjectData = { ...dataToSave, createdAt: serverTimestamp() };
       const newProjectRef = await addDoc(projectsCollection, newProjectData);
       const result = { success: true, id: newProjectRef.id };
-      // By forcing the result through JSON serialization and parsing,
-      // we ensure it's a clean object that won't cause the client promise to hang.
       return JSON.parse(JSON.stringify(result));
     }
 
@@ -95,15 +84,21 @@ export async function getProjects(uid: string) {
     try {
         const projectsRef = collection(db, 'usuarios', uid, 'proyectos');
         const querySnapshot = await getDocs(projectsRef);
-        const projects = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        
+        const projects = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate?.().toISOString() || null,
+                updatedAt: data.updatedAt?.toDate?.().toISOString() || null,
+            };
+        });
 
-        projects.sort((a: any, b: any) => {
-            const timeA = a.updatedAt?.toDate?.() || new Date(0);
-            const timeB = b.updatedAt?.toDate?.() || new Date(0);
-            return timeB.getTime() - timeA.getTime();
+        projects.sort((a, b) => {
+            const timeA = a.updatedAt || '';
+            const timeB = b.updatedAt || '';
+            return timeB.localeCompare(timeA);
         });
 
         return { data: projects };
