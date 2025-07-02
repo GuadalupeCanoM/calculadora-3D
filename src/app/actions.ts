@@ -4,7 +4,7 @@
 import { analyzeGcode } from '@/ai/flows/gcode-analyzer';
 import { db } from '@/lib/firebase';
 import type { FormData } from '@/lib/schema';
-import { collection, addDoc, getDocs, query, where, deleteDoc, doc, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, deleteDoc, doc, orderBy, Timestamp } from 'firebase/firestore';
 
 async function blobToDataURI(blob: Blob): Promise<string> {
     const buffer = Buffer.from(await blob.arrayBuffer());
@@ -65,10 +65,23 @@ export async function getProjects(uid: string) {
     try {
         const q = query(collection(db, "projects"), where("uid", "==", uid), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
-        const projects = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const projects = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            // PREVENTIVE FIX: Ensure Timestamps are converted to a serializable format (ISO string)
+            // before being sent to the client component to prevent errors.
+            const createdAt = data.createdAt;
+            if (createdAt instanceof Timestamp) {
+                return {
+                    id: doc.id,
+                    ...data,
+                    createdAt: createdAt.toDate().toISOString(),
+                };
+            }
+            return {
+                id: doc.id,
+                ...data,
+            };
+        });
         return { data: projects };
     } catch (error) {
         console.error("🔥 Error in getProjects:", error);
@@ -84,13 +97,7 @@ export async function deleteProject(uid: string, projectId: string) {
         return { error: 'User is not authenticated.' };
     }
     try {
-        const projectRef = doc(db, 'projects', projectId);
-        // Security is handled by Firestore rules, but an explicit check here is good practice.
-        // const projectDoc = await getDoc(projectRef);
-        // if (!projectDoc.exists() || projectDoc.data().uid !== uid) {
-        //     return { error: 'Permission denied or project not found.' };
-        // }
-        await deleteDoc(projectRef);
+        await deleteDoc(doc(db, 'projects', projectId));
         return { success: true };
     } catch (error) {
         console.error("🔥 Error in deleteProject:", error);

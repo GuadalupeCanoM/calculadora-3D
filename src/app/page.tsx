@@ -47,9 +47,13 @@ function HomePageContent() {
     const formData = form.getValues();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...dataToSave } = formData;
+    
+    // CRITICAL FIX: Ensure the data is a plain JSON object before sending to the server action.
+    // This prevents non-serializable data from react-hook-form from causing issues.
+    const cleanData = JSON.parse(JSON.stringify(dataToSave));
 
     try {
-      const result = await saveProject(user.uid, dataToSave);
+      const result = await saveProject(user.uid, cleanData);
 
       if (result.error) {
         toast({ variant: "destructive", title: "Error al guardar", description: result.error });
@@ -94,13 +98,6 @@ function HomePageContent() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-             <Button onClick={handleNewProject} variant="outline" size="sm">
-                <FilePlus className="mr-2 h-4 w-4" /> Nuevo
-             </Button>
-            <Button onClick={handleSaveProject} disabled={isSaving} variant="outline" size="sm">
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              {isSaving ? 'Guardando...' : 'Guardar'}
-            </Button>
             <SavedProjectsDialog form={form}>
               <Button variant="outline" size="sm"><FolderOpen className="mr-2 h-4 w-4"/> Proyectos</Button>
             </SavedProjectsDialog>
@@ -117,6 +114,16 @@ function HomePageContent() {
         </header>
 
         <CalculatorForm form={form} />
+
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-end w-full print:hidden">
+            <Button onClick={handleNewProject} variant="outline" size="default" className="w-full sm:w-auto">
+                <FilePlus className="mr-2 h-4 w-4" /> Nuevo Proyecto
+            </Button>
+            <Button onClick={handleSaveProject} disabled={isSaving} size="default" className="w-full sm:w-auto">
+              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              {isSaving ? 'Guardando...' : 'Guardar Proyecto'}
+            </Button>
+        </div>
       </div>
       
       <footer className="w-full py-6 text-center text-sm text-muted-foreground print:hidden mt-12">

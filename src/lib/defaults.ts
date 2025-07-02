@@ -12,7 +12,7 @@ export const defaultFormValues: FormData = {
   printingTimeMinutes: 0,
   filamentWeight: 0,
   filamentType: '',
-  spoolPrice: 0,
+  spoolPrice: 20,
   spoolWeight: 1000,
   projectImage: '',
   currency: 'EUR',
