@@ -51,12 +51,14 @@ import {
   Zap,
   Save,
   ImagePlus,
+  FilePlus,
 } from "lucide-react";
 import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useAuth } from "@/context/auth-context";
 
 export const formSchema = z.object({
+  id: z.string().optional(),
   jobName: z.string().optional().default(""),
   projectImage: z.string().optional().default(""),
   currency: z.string().min(1, 'La moneda es obligatoria.').default('EUR'),
@@ -269,7 +271,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
       });
       return;
     }
-
+  
     const data = form.getValues();
     if (!data.jobName || data.jobName.trim() === '') {
       toast({
@@ -279,29 +281,44 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
       });
       return;
     }
-    
+  
     setIsSaving(true);
     try {
       const result = await saveProject(user.uid, data);
-
+  
       if (result.error) {
         toast({
           variant: "destructive",
           title: 'Error al guardar',
           description: result.error,
         });
-      } else {
-        toast({ title: 'Proyecto guardado', description: `El proyecto "${data.jobName}" ha sido guardado en la nube.` });
+      } else if (result.success && result.id) {
+        const message = data.id ? 'Proyecto actualizado' : 'Proyecto guardado';
+        toast({ title: message, description: `El proyecto "${data.jobName}" ha sido guardado.` });
+        // Update form with the ID so subsequent saves are updates
+        form.setValue('id', result.id);
       }
     } catch (error) {
-        toast({
-            variant: "destructive",
-            title: "Error Inesperado",
-            description: "Ocurrió un error en la comunicación al guardar. Por favor, inténtalo de nuevo."
-        });
+      toast({
+        variant: "destructive",
+        title: "Error Inesperado",
+        description: "Ocurrió un error en la comunicación al guardar. Por favor, inténtalo de nuevo."
+      });
     } finally {
-        setIsSaving(false);
+      setIsSaving(false);
     }
+  };
+
+  const handleNewProject = () => {
+    // Preserves the selected currency, resets everything else to defaults
+    form.reset({
+      ...formSchema.parse({}), // Get all default values
+      currency: form.getValues('currency'), // Keep the current currency
+    });
+    toast({
+      title: "Formulario Limpiado",
+      description: "Puedes empezar a calcular un nuevo proyecto.",
+    });
   };
 
 
@@ -654,9 +671,12 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           </Accordion>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
+              <Button type="button" onClick={handleNewProject} variant="secondary" className="w-full sm:w-auto">
+                <FilePlus className="mr-2 h-4 w-4"/> Nuevo Proyecto
+              </Button>
               <Button type="button" onClick={handleSaveProject} disabled={isSaving} variant="default" className="w-full sm:w-auto">
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>}
-                {isSaving ? 'Guardando...' : 'Guardar Proyecto'}
+                {isSaving ? 'Guardando...' : (watchedValues.id ? 'Actualizar Proyecto' : 'Guardar Proyecto')}
               </Button>
               <Button type="button" onClick={handleShare} variant="outline" className="w-full sm:w-auto"><Share2 className="mr-2 h-4 w-4"/> Compartir</Button>
               <Button type="button" onClick={handlePrint} className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90"><Printer className="mr-2 h-4 w-4"/> Imprimir Resumen</Button>
