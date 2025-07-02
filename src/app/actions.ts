@@ -39,12 +39,16 @@ export async function saveProject(uid: string, projectData: any) {
   }
 
   try {
-    // Use jobName as the document ID for easy updates (upsert)
-    const projectRef = doc(db, 'usuarios', uid, 'proyectos', projectData.jobName.trim());
+    const cleanedJobName = projectData.jobName.trim();
+    // Use cleaned jobName as the document ID for easy updates (upsert)
+    const projectRef = doc(db, 'usuarios', uid, 'proyectos', cleanedJobName);
+
     await setDoc(projectRef, {
       ...projectData,
+      jobName: cleanedJobName, // Ensure the saved name is also trimmed
       updatedAt: serverTimestamp(),
     }, { merge: true });
+
     return { success: true, id: projectRef.id };
   } catch (e) {
     console.error("Error saving project: ", e);

@@ -185,11 +185,12 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+    const MAX_IMAGE_SIZE_KB = 750;
+    if (file.size > MAX_IMAGE_SIZE_KB * 1024) {
       toast({
         variant: "destructive",
         title: "Imagen demasiado grande",
-        description: "Por favor, sube una imagen de menos de 2MB.",
+        description: `La imagen no puede superar los ${MAX_IMAGE_SIZE_KB} KB para poder guardarse en la nube.`,
       });
       if(event.target) event.target.value = ''; // Clear the input
       return;
@@ -389,7 +390,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                           )}
                       </div>
                        <FormDescription>
-                          Añade una imagen para identificar tu proyecto guardado. Máx 2MB.
+                          Añade una imagen para identificar tu proyecto guardado. Máx 750KB.
                       </FormDescription>
                     </div>
                     <Separator />
