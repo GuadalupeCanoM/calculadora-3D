@@ -2,7 +2,9 @@
 
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { Github, Youtube, Instagram } from 'lucide-react';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -13,26 +15,67 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
+const TikTokIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-2.43.03-4.83-.95-6.43-2.88-1.59-1.94-2.2-4.42-1.8-6.83.39-2.4 1.8-4.54 3.69-6.02.85-.67 1.78-1.25 2.76-1.74.04-1.57.02-3.14.01-4.71.13-1.09.43-2.16.92-3.12C8.86.93 10.63.15 12.525.02Z" />
+    </svg>
+);
 
 export default function LoginPage() {
   const { login, loading } = useAuth();
+  const [year, setYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8">
-      <div className="w-full max-w-sm text-center">
-        <h1 className="font-headline text-4xl font-bold tracking-tighter text-primary sm:text-5xl md:text-6xl">
-          Calculadora 3D de Luprintech
-        </h1>
-        <p className="mt-4 max-w-md text-lg text-muted-foreground">
-          Calcula al instante el precio de tus impresiones 3D con precisión
-        </p>
-        <div className="mt-8">
-          <Button onClick={login} disabled={loading} className="w-full">
-            <GoogleIcon className="mr-2 h-5 w-5" />
-            {loading ? 'Iniciando sesión...' : 'Iniciar sesión con Google'}
-          </Button>
+    <main className="flex min-h-screen flex-col items-center justify-between bg-background p-4 sm:p-8">
+      <div className="flex w-full flex-grow items-center justify-center">
+        <div className="w-full max-w-md text-center animate-fade-in">
+          <Image
+            src="https://placehold.co/200x200.png"
+            alt="Ilustración de una impresora 3D"
+            width={150}
+            height={150}
+            className="mx-auto mb-6"
+            data-ai-hint="3d printer illustration"
+            priority
+          />
+          <div className="mb-4">
+            <h1 className="font-headline text-5xl font-bold tracking-tighter text-primary sm:text-6xl">
+              Calculadora 3D
+            </h1>
+            <p className="font-headline text-2xl text-muted-foreground">
+              by Luprintech
+            </p>
+          </div>
+          <p className="mx-auto mt-4 max-w-sm text-lg text-muted-foreground">
+            Calcula al instante el precio de tus impresiones 3D con precisión.
+          </p>
+          <div className="mt-8">
+            <Button
+              onClick={login}
+              disabled={loading}
+              className="w-full rounded-2xl shadow-md transition-all hover:shadow-lg"
+              size="lg"
+            >
+              <GoogleIcon className="mr-3 h-6 w-6" />
+              {loading ? 'Iniciando sesión...' : 'Iniciar sesión con Google'}
+            </Button>
+          </div>
         </div>
       </div>
+      <footer className="w-full py-6 text-center text-sm text-muted-foreground">
+        <div className="flex justify-center gap-6 mb-4">
+            <a href="https://github.com/GuadalupeCanoM" target="_blank" rel="noopener noreferrer" aria-label="GitHub de Guadalupe Cano" className="text-muted-foreground hover:text-primary transition-colors"><Github className="h-5 w-5" /></a>
+            <a href="https://www.youtube.com/@Luprintech" target="_blank" rel="noopener noreferrer" aria-label="Canal de YouTube de Luprintech" className="text-muted-foreground hover:text-primary transition-colors"><Youtube className="h-5 w-5" /></a>
+            <a href="https://www.instagram.com/luprintech/" target="_blank" rel="noopener noreferrer" aria-label="Perfil de Instagram de Luprintech" className="text-muted-foreground hover:text-primary transition-colors"><Instagram className="h-5 w-5" /></a>
+            <a href="https://www.tiktok.com/@luprintech" target="_blank" rel="noopener noreferrer" aria-label="Perfil de TikTok de Luprintech" className="text-muted-foreground hover:text-primary transition-colors"><TikTokIcon className="h-5 w-5" /></a>
+        </div>
+        <p className="mb-2">¿Tienes dudas? Escríbeme a <a href="mailto:info@luprintech.com" className="text-primary hover:underline">info@luprintech.com</a></p>
+        {year && <p>&copy; {year} Luprintech. Todos los derechos reservados.</p>}
+      </footer>
     </main>
   );
 }
