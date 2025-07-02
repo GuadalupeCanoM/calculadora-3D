@@ -1,11 +1,10 @@
 "use client";
 
 import { CalculatorForm } from "@/components/calculator-form";
-import { SavedProjectsDialog } from "@/components/saved-projects-dialog";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FolderOpen, Github, Youtube, Instagram, LogOut } from "lucide-react";
+import { Github, Youtube, Instagram, LogOut } from "lucide-react";
 import { ProtectedRoute } from "@/components/protected-route";
 import { useAuth } from "@/context/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -46,14 +45,6 @@ function HomePageContent() {
             )}
           </div>
         </header>
-
-        <div className="flex justify-center mb-8 print:hidden">
-            <SavedProjectsDialog form={form}>
-               <Button variant="outline">
-                   <FolderOpen className="mr-2 h-4 w-4" /> Proyectos Guardados
-               </Button>
-            </SavedProjectsDialog>
-        </div>
 
         <CalculatorForm form={form} />
       </div>

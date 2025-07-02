@@ -5,7 +5,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import Image from "next/image";
 import { formSchema, type FormData } from "@/lib/schema";
-import { defaultFormValues } from "@/lib/defaults";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +33,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { handleAnalyzeGcode, saveProject } from "@/app/actions";
+import { handleAnalyzeGcode } from "@/app/actions";
 import { PrintSummary } from "@/components/print-summary";
 import {
   UploadCloud,
@@ -50,21 +49,16 @@ import {
   DollarSign,
   Wrench,
   Zap,
-  Save,
   ImagePlus,
-  FilePlus,
 } from "lucide-react";
 import { TooltipProvider } from "./ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { useAuth } from "@/context/auth-context";
 
 export { formSchema, type FormData };
 
 export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
   const { toast } = useToast();
-  const { user } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,23 +66,6 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
     control: form.control,
     name: "otherCosts",
   });
-
-  useEffect(() => {
-    const tempProject = sessionStorage.getItem("proyectoTemporal");
-    if (tempProject) {
-      try {
-        const parsedProject = JSON.parse(tempProject);
-        form.reset(parsedProject);
-        toast({
-          title: "Proyecto restaurado",
-          description: "Se ha recuperado tu trabajo no guardado de la sesión anterior.",
-        });
-      } catch (error) {
-        console.error("Failed to parse project from sessionStorage", error);
-        sessionStorage.removeItem("proyectoTemporal");
-      }
-    }
-  }, [form, toast]);
 
 
   const watchedValues = form.watch();
@@ -249,87 +226,6 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
     } else {
         await navigator.clipboard.writeText(summaryText.trim());
         toast({ title: 'Resumen copiado al portapapeles.' });
-    }
-  };
-
-  const handleNewProject = () => {
-    form.reset({
-      ...defaultFormValues,
-      currency: form.getValues('currency'),
-    });
-    sessionStorage.removeItem("proyectoTemporal");
-    toast({
-      title: "Formulario Limpiado",
-      description: "Puedes empezar a calcular un nuevo proyecto.",
-    });
-  };
-
-  const handleSaveProject = async () => {
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Error de Autenticación",
-        description: "Debes iniciar sesión para guardar un proyecto.",
-      });
-      return;
-    }
-
-    const isValid = await form.trigger();
-    if (!isValid) {
-      toast({
-        variant: "destructive",
-        title: "Datos no válidos",
-        description: "Por favor, revisa los campos obligatorios marcados en rojo.",
-      });
-      return;
-    }
-    
-    const formData = form.getValues();
-    
-    setIsSaving(true);
-    sessionStorage.setItem("proyectoTemporal", JSON.stringify(formData));
-    console.log("Datos a guardar:", formData);
-
-    try {
-      const result = await saveProject(user.uid, formData);
-  
-      if (result.error) {
-        toast({
-          variant: "destructive",
-          title: 'Error al guardar',
-          description: result.error,
-        });
-      } else if (result.success && result.id) {
-        const isUpdate = !!formData.id;
-        const message = isUpdate ? 'Proyecto actualizado con éxito' : 'Proyecto guardado con éxito';
-        
-        toast({ title: message, description: `Tu trabajo "${formData.jobName}" está a salvo.` });
-        
-        if (isUpdate) {
-          // Si es una actualización, mantenemos el ID.
-          form.setValue('id', result.id, { shouldValidate: true });
-        } else {
-          // Si es una creación, reseteamos el formulario para un nuevo proyecto.
-          form.reset({
-            ...defaultFormValues,
-            currency: form.getValues('currency'),
-          });
-        }
-        
-        sessionStorage.removeItem("proyectoTemporal");
-        console.log("Guardado exitoso. ID:", result.id);
-      } else {
-        throw new Error("Respuesta inesperada del servidor.");
-      }
-    } catch (error) {
-      console.error("Error inesperado al guardar el proyecto:", error);
-      toast({
-        variant: "destructive",
-        title: "Error Inesperado",
-        description: error instanceof Error ? error.message : "Ocurrió un error en la comunicación al guardar."
-      });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -684,13 +580,6 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           </Accordion>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
-              <Button type="button" onClick={handleNewProject} variant="secondary" className="w-full sm:w-auto">
-                <FilePlus className="mr-2 h-4 w-4"/> Nuevo Proyecto
-              </Button>
-              <Button type="button" onClick={handleSaveProject} disabled={isSaving} variant="default" className="w-full sm:w-auto">
-                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4"/>}
-                {isSaving ? 'Guardando...' : (watchedValues.id ? 'Actualizar Proyecto' : 'Guardar Proyecto')}
-              </Button>
               <Button type="button" onClick={handleShare} variant="outline" className="w-full sm:w-auto"><Share2 className="mr-2 h-4 w-4"/> Compartir</Button>
               <Button type="button" onClick={handlePrint} className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90"><Printer className="mr-2 h-4 w-4"/> Imprimir Resumen</Button>
           </div>
