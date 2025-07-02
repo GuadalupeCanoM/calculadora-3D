@@ -253,7 +253,6 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           title: "Datos no válidos",
           description: "Por favor, revisa los campos obligatorios marcados en rojo.",
         });
-        // This return is crucial to stop the execution if validation fails.
         return;
       }
       
@@ -279,17 +278,14 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
         description: "Ocurrió un error en la comunicación al guardar. Por favor, inténtalo de nuevo."
       });
     } finally {
-      // This block ensures the saving indicator is always turned off,
-      // whether the save succeeds or fails.
       setIsSaving(false);
     }
   };
 
   const handleNewProject = () => {
-    // Preserves the selected currency, resets everything else to defaults
     form.reset({
-      ...defaultFormValues, // Use the new defaults object
-      currency: form.getValues('currency'), // Keep the current currency
+      ...defaultFormValues,
+      currency: form.getValues('currency'),
     });
     toast({
       title: "Formulario Limpiado",
