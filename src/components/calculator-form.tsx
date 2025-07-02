@@ -316,7 +316,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                        <FormField control={form.control} name="jobName" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nombre del Trabajo</FormLabel>
+                          <FormLabel>Nombre del Trabajo <span className="text-destructive">*</span></FormLabel>
                           <FormControl><Input placeholder="Ej: Benchy, Litofanía, etc." {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -397,7 +397,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                          <FormLabel className="flex items-center gap-2"><Clock size={16}/> Tiempo de Impresión</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><Clock size={16}/> Tiempo de Impresión <span className="text-destructive">*</span></FormLabel>
                           <div className="flex items-center gap-2">
                               <FormField
                                   control={form.control}
@@ -433,7 +433,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                       </div>
                       <FormField control={form.control} name="filamentWeight" render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center gap-2"><Weight size={16}/> Peso del Filamento (gramos)</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><Weight size={16}/> Peso del Filamento (gramos) <span className="text-destructive">*</span></FormLabel>
                           <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -459,7 +459,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                       name="filamentType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tipo de Filamento</FormLabel>
+                          <FormLabel>Tipo de Filamento <span className="text-destructive">*</span></FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -479,10 +479,10 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                       )}
                     />
                     <FormField control={form.control} name="spoolPrice" render={({ field }) => (
-                        <FormItem><FormLabel>Precio de la Bobina</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Precio de la Bobina <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="spoolWeight" render={({ field }) => (
-                        <FormItem><FormLabel>Peso de la Bobina (gramos)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>
+                        <FormItem><FormLabel>Peso de la Bobina (gramos) <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>
                     )} />
                   </div>
                   <Separator className="my-6" />
