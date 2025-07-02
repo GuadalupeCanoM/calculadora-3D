@@ -252,6 +252,18 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
     }
   };
 
+  const handleNewProject = () => {
+    form.reset({
+      ...defaultFormValues,
+      currency: form.getValues('currency'),
+    });
+    sessionStorage.removeItem("proyectoTemporal");
+    toast({
+      title: "Formulario Limpiado",
+      description: "Puedes empezar a calcular un nuevo proyecto.",
+    });
+  };
+
   const handleSaveProject = async () => {
     if (!user) {
       toast({
@@ -288,9 +300,22 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           description: result.error,
         });
       } else if (result.success && result.id) {
-        const message = formData.id ? 'Proyecto actualizado con éxito' : 'Proyecto guardado con éxito';
+        const isUpdate = !!formData.id;
+        const message = isUpdate ? 'Proyecto actualizado con éxito' : 'Proyecto guardado con éxito';
+        
         toast({ title: message, description: `Tu trabajo "${formData.jobName}" está a salvo.` });
-        form.setValue('id', result.id, { shouldValidate: true });
+        
+        if (isUpdate) {
+          // Si es una actualización, mantenemos el ID.
+          form.setValue('id', result.id, { shouldValidate: true });
+        } else {
+          // Si es una creación, reseteamos el formulario para un nuevo proyecto.
+          form.reset({
+            ...defaultFormValues,
+            currency: form.getValues('currency'),
+          });
+        }
+        
         sessionStorage.removeItem("proyectoTemporal");
         console.log("Guardado exitoso. ID:", result.id);
       } else {
@@ -306,18 +331,6 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleNewProject = () => {
-    form.reset({
-      ...defaultFormValues,
-      currency: form.getValues('currency'),
-    });
-    sessionStorage.removeItem("proyectoTemporal");
-    toast({
-      title: "Formulario Limpiado",
-      description: "Puedes empezar a calcular un nuevo proyecto.",
-    });
   };
 
 

@@ -35,7 +35,7 @@ export async function handleAnalyzeGcode(formData: FormData) {
 }
 
 export async function saveProject(uid: string, projectData: any) {
-  console.log("✔️ Entrando en saveProject en el servidor...");
+  console.log("✔️ Entrando en saveProject (modo creación/actualización) en el servidor...");
   if (!uid) {
     console.error("❌ Error: Usuario no autenticado en saveProject.");
     return { error: 'Usuario no autenticado.' };
@@ -49,8 +49,6 @@ export async function saveProject(uid: string, projectData: any) {
   
   const { id: projectId, ...data } = validated.data;
 
-  // Clean the data object to remove any 'undefined' values before saving to Firestore.
-  // Firestore cannot store 'undefined' and will throw an error.
   const cleanData = Object.fromEntries(
     Object.entries(data).filter(([, v]) => v !== undefined)
   );
@@ -58,8 +56,8 @@ export async function saveProject(uid: string, projectData: any) {
   try {
     const dataToSave = {
       ...cleanData,
-      uid, // Add UID to the document itself, good practice
-      updatedAt: new Date(), // Using new Date() for safer serialization
+      uid,
+      updatedAt: new Date(),
     };
 
     console.log("💾 Datos a guardar en Firestore:", dataToSave);
@@ -104,13 +102,11 @@ export async function getProjects(uid: string) {
             return {
                 id: doc.id,
                 ...data,
-                // Ensure timestamps are converted to a serializable format (ISO string)
                 createdAt: data.createdAt?.toDate?.().toISOString() || null,
                 updatedAt: data.updatedAt?.toDate?.().toISOString() || null,
             };
         });
 
-        // Sort by updatedAt descending to show the most recent projects first
         projects.sort((a, b) => {
             const timeA = a.updatedAt || '';
             const timeB = b.updatedAt || '';
