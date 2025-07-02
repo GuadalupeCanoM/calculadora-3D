@@ -20,8 +20,8 @@ export default function LoginPage() {
       <div className="flex w-full flex-grow items-center justify-center">
         <div className="w-full max-w-md text-center animate-fade-in">
           <Image
-            src="https://placehold.co/200x200.png"
-            alt="Ilustración de una impresora 3D"
+            src="/Logo.svg"
+            alt="Logo Luprintech"
             width={200}
             height={200}
             className="mx-auto mb-6"

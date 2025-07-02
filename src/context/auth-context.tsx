@@ -24,13 +24,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
-      if (!user) {
-        router.push('/login');
-      }
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, []);
 
   const login = async () => {
     try {
