@@ -243,8 +243,20 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
       return;
     }
   
-    const data = form.getValues();
-    if (!data.jobName || data.jobName.trim() === '') {
+    // Use validated data to ensure all fields and defaults are correct
+    const rawData = form.getValues();
+    const validationResult = formSchema.safeParse(rawData);
+
+    if (!validationResult.success) {
+      toast({
+        variant: "destructive",
+        title: "Datos no válidos",
+        description: "Algunos datos del formulario son incorrectos. Por favor, revisa los campos.",
+      });
+      return;
+    }
+    
+    if (!validationResult.data.jobName || validationResult.data.jobName.trim() === '') {
       toast({
         variant: "destructive",
         title: 'Nombre Requerido',
@@ -252,10 +264,11 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
       });
       return;
     }
-  
+
     setIsSaving(true);
     try {
-      const result = await saveProject(user.uid, data);
+      // Pass the fully validated data to the server action
+      const result = await saveProject(user.uid, validationResult.data);
   
       if (result.error) {
         toast({
@@ -264,12 +277,14 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
           description: result.error,
         });
       } else if (result.success && result.id) {
-        const message = data.id ? 'Proyecto actualizado' : 'Proyecto guardado';
-        toast({ title: message, description: `El proyecto "${data.jobName}" ha sido guardado.` });
+        const message = rawData.id ? 'Proyecto actualizado' : 'Proyecto guardado';
+        toast({ title: message, description: `El proyecto "${validationResult.data.jobName}" ha sido guardado.` });
+        
         // Update form with the ID so subsequent saves are updates
         form.setValue('id', result.id);
       }
     } catch (error) {
+      console.error("Error calling saveProject:", error);
       toast({
         variant: "destructive",
         title: "Error Inesperado",
@@ -661,3 +676,5 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
     </TooltipProvider>
   );
 }
+
+    
