@@ -3,7 +3,6 @@
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { Github, Youtube, Instagram, Loader2 } from 'lucide-react';
 import { GoogleIcon, TikTokIcon } from '@/components/icons';
 import { useRouter } from 'next/navigation';
@@ -41,16 +40,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-between bg-background p-4 sm:p-8">
       <div className="flex w-full flex-grow items-center justify-center">
         <div className="w-full max-w-md text-center animate-fade-in">
-          <Image
-            src="/Logo.svg"
-            alt="Logo Luprintech"
-            width={200}
-            height={200}
-            className="mx-auto mb-6"
-            data-ai-hint="3d printer illustration"
-            priority
-          />
-          <div className="mb-4">
+          <div className="mb-4 mt-8">
             <h1 className="font-headline text-5xl font-bold tracking-tighter text-primary sm:text-6xl">
               Calculadora 3D
             </h1>
