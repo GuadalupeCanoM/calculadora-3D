@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { ProtectedRoute } from "@/components/protected-route";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 function HomePageContent() {
   const form = useForm<FormData>({
@@ -34,17 +35,25 @@ function HomePageContent() {
             />
             <div className="text-left">
               <h1 className="font-headline text-3xl font-bold tracking-tighter text-primary sm:text-4xl">
-                Calculadora
+                Calculadora 3D
               </h1>
                <p className="text-sm text-muted-foreground">
                 Bienvenido, {user?.displayName || user?.email}
               </p>
             </div>
           </div>
-           <Button onClick={logout} variant="outline">
+          <div className="flex items-center gap-4">
+            <Button onClick={logout} variant="outline">
               <LogOut className="mr-2 h-4 w-4" />
               Cerrar Sesión
             </Button>
+            {user?.photoURL && (
+              <Avatar>
+                <AvatarImage src={user.photoURL} alt={user.displayName || 'Avatar de usuario'} />
+                <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
+              </Avatar>
+            )}
+          </div>
         </header>
 
         <CalculatorForm form={form} />
