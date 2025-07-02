@@ -53,6 +53,10 @@ export async function saveProject(uid: string, projectData: any) {
   } catch (e) {
     console.error("Error saving project: ", e);
     if (e instanceof Error) {
+        // Firestore's document size limit error often includes this phrase.
+        if (e.message.toLowerCase().includes('maximum size')) {
+          return { error: 'El proyecto es demasiado grande para guardar. Prueba con una imagen más pequeña.' };
+        }
         return { error: `Error al guardar el proyecto: ${e.message}` };
     }
     return { error: 'Ocurrió un error desconocido al guardar el proyecto.' };

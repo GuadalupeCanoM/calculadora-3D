@@ -185,7 +185,7 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const MAX_IMAGE_SIZE_KB = 750;
+    const MAX_IMAGE_SIZE_KB = 500;
     if (file.size > MAX_IMAGE_SIZE_KB * 1024) {
       toast({
         variant: "destructive",
@@ -390,7 +390,7 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
                           )}
                       </div>
                        <FormDescription>
-                          Añade una imagen para identificar tu proyecto guardado. Máx 750KB.
+                          Añade una imagen para identificar tu proyecto guardado. Máx 500KB.
                       </FormDescription>
                     </div>
                     <Separator />
