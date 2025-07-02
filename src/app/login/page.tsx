@@ -4,16 +4,38 @@ import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Github, Youtube, Instagram } from 'lucide-react';
+import { Github, Youtube, Instagram, Loader2 } from 'lucide-react';
 import { GoogleIcon, TikTokIcon } from '@/components/icons';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { login, loading } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [year, setYear] = useState<number | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/');
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
+  
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    await login();
+  };
+
+  if (authLoading || user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between bg-background p-4 sm:p-8">
@@ -41,13 +63,13 @@ export default function LoginPage() {
           </p>
           <div className="mt-8">
             <Button
-              onClick={login}
-              disabled={loading}
+              onClick={handleLogin}
+              disabled={isLoggingIn}
               className="w-full rounded-2xl shadow-md transition-all hover:shadow-lg"
               size="lg"
             >
               <GoogleIcon className="mr-3 h-6 w-6" />
-              {loading ? 'Iniciando sesión...' : 'Iniciar sesión con Google'}
+              {isLoggingIn ? 'Iniciando sesión...' : 'Iniciar sesión con Google'}
             </Button>
           </div>
         </div>
