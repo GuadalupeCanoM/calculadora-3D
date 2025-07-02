@@ -21,10 +21,8 @@ import type { FormData } from '@/lib/schema';
 import { useAuth } from '@/context/auth-context';
 import { getProjects, deleteProject } from '@/app/actions';
 
-interface SavedProject {
+interface SavedProject extends FormData {
   id: string;
-  name: string;
-  data: FormData;
 }
 
 interface SavedProjectsDialogProps {
@@ -54,9 +52,7 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
            setProjects([]);
         } else if (result.data) {
            const formattedProjects: SavedProject[] = result.data.map((p: any) => ({
-             id: p.id,
-             name: p.jobName || 'Proyecto sin nombre',
-             data: p as FormData,
+             ...p, // p already contains id and other form data
            }));
            setProjects(formattedProjects);
         }
@@ -68,17 +64,17 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
   }, [isOpen, user, toast]);
 
   const handleLoadProject = (project: SavedProject) => {
-    form.reset(project.data);
+    form.reset(project);
     toast({
       title: 'Proyecto Cargado',
-      description: `Se ha cargado el proyecto "${project.name}".`,
+      description: `Se ha cargado el proyecto "${project.jobName}".`,
     });
     setIsOpen(false);
   };
 
-  const handleDeleteProject = async (project: SavedProject) => {
+  const handleDeleteProject = async (projectToDelete: SavedProject) => {
     if (!user) return;
-    const result = await deleteProject(user.uid, project.id);
+    const result = await deleteProject(user.uid, projectToDelete.id);
     
     if (result.error) {
        toast({
@@ -87,10 +83,10 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
         description: result.error,
       });
     } else {
-      setProjects(projects.filter((p) => p.id !== project.id));
+      setProjects(projects.filter((p) => p.id !== projectToDelete.id));
       toast({
         title: 'Proyecto Eliminado',
-        description: `El proyecto "${project.name}" ha sido eliminado de la nube.`,
+        description: `El proyecto "${projectToDelete.jobName}" ha sido eliminado de la nube.`,
       });
     }
   };
@@ -118,10 +114,10 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
                 {projects.map((project) => (
                   <li key={project.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                      {project.data.projectImage ? (
+                      {project.projectImage ? (
                         <Image
-                          src={project.data.projectImage}
-                          alt={`Imagen de ${project.name}`}
+                          src={project.projectImage}
+                          alt={`Imagen de ${project.jobName}`}
                           width={40}
                           height={40}
                           className="h-10 w-10 rounded-md object-cover flex-shrink-0"
@@ -131,7 +127,7 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
                           <ImageIcon className="h-5 w-5" />
                         </div>
                       )}
-                      <span className="font-medium truncate">{project.name}</span>
+                      <span className="font-medium truncate">{project.jobName}</span>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Button variant="ghost" size="icon" onClick={() => handleLoadProject(project)} title="Cargar proyecto">
@@ -147,7 +143,7 @@ export function SavedProjectsDialog({ form, children }: SavedProjectsDialogProps
                               <AlertDialogHeader>
                                   <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                      Esta acción no se puede deshacer. Esto eliminará permanentemente el proyecto "{project.name}" de la nube.
+                                      Esta acción no se puede deshacer. Esto eliminará permanentemente el proyecto "{project.jobName}" de la nube.
                                   </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>

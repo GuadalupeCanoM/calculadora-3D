@@ -6,6 +6,7 @@ import type { FormData } from '@/lib/schema';
 // preventing issues where default "empty" values don't pass validation checks
 // that are intended for submitted data.
 export const defaultFormValues: FormData = {
+  id: undefined,
   jobName: '',
   printingTimeHours: 0,
   printingTimeMinutes: 0,

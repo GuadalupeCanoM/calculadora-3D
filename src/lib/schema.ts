@@ -1,6 +1,9 @@
 import * as z from "zod";
 
 export const formSchema = z.object({
+  // This ID is for client-side tracking of a loaded project.
+  id: z.string().optional(),
+
   // == Required Fields ==
   jobName: z.string().min(1, 'El nombre del trabajo es obligatorio.'),
   

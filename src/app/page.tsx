@@ -1,9 +1,10 @@
 "use client";
 
+import React, { useState } from 'react';
 import { CalculatorForm } from "@/components/calculator-form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Github, Youtube, Instagram, LogOut } from "lucide-react";
+import { Github, Youtube, Instagram, LogOut, Save, FolderOpen, Loader2, FilePlus } from "lucide-react";
 import { TikTokIcon } from "@/components/icons";
 import { formSchema, type FormData } from "@/lib/schema";
 import { defaultFormValues } from "@/lib/defaults";
@@ -12,6 +13,9 @@ import { ProtectedRoute } from "@/components/protected-route";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from '@/hooks/use-toast';
+import { saveProject } from '@/app/actions';
+import { SavedProjectsDialog } from '@/components/saved-projects-dialog';
 
 function HomePageContent() {
   const form = useForm<FormData>({
@@ -19,7 +23,53 @@ function HomePageContent() {
     defaultValues: defaultFormValues,
   });
   const { user, logout } = useAuth();
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
   const currentYear = new Date().getFullYear();
+
+  const handleSaveProject = async () => {
+    if (!user) {
+      toast({ variant: "destructive", title: "Debes iniciar sesión para guardar." });
+      return;
+    }
+
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast({
+        variant: "destructive",
+        title: "Faltan campos obligatorios",
+        description: "Por favor, completa todos los campos marcados con *.",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    const formData = form.getValues();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...dataToSave } = formData;
+
+    try {
+      const result = await saveProject(user.uid, dataToSave);
+
+      if (result.error) {
+        toast({ variant: "destructive", title: "Error al guardar", description: result.error });
+      } else {
+        toast({ title: "¡Proyecto guardado con éxito!" });
+        // After saving, reset to a new project form
+        form.reset(defaultFormValues);
+      }
+    } catch (err) {
+      console.error("Unexpected error saving project:", err);
+      toast({ variant: "destructive", title: "Ha ocurrido un error inesperado." });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleNewProject = () => {
+    form.reset(defaultFormValues);
+    toast({ title: "Nuevo proyecto", description: "El formulario ha sido limpiado." });
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-8 md:p-12">
@@ -43,10 +93,19 @@ function HomePageContent() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Button onClick={logout} variant="outline">
+          <div className="flex items-center gap-2">
+             <Button onClick={handleNewProject} variant="outline" size="sm">
+                <FilePlus className="mr-2 h-4 w-4" /> Nuevo
+             </Button>
+            <Button onClick={handleSaveProject} disabled={isSaving} variant="outline" size="sm">
+              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              {isSaving ? 'Guardando...' : 'Guardar'}
+            </Button>
+            <SavedProjectsDialog form={form}>
+              <Button variant="outline" size="sm"><FolderOpen className="mr-2 h-4 w-4"/> Proyectos</Button>
+            </SavedProjectsDialog>
+            <Button onClick={logout} variant="outline" size="sm">
               <LogOut className="mr-2 h-4 w-4" />
-              Cerrar Sesión
             </Button>
             {user?.photoURL && (
               <Avatar>
