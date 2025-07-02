@@ -3,38 +3,48 @@
 import { CalculatorForm } from "@/components/calculator-form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Github, Youtube, Instagram } from "lucide-react";
+import { Github, Youtube, Instagram, LogOut } from "lucide-react";
 import { TikTokIcon } from "@/components/icons";
 import { formSchema, type FormData } from "@/lib/schema";
 import { defaultFormValues } from "@/lib/defaults";
 import Image from 'next/image';
+import { ProtectedRoute } from "@/components/protected-route";
+import { useAuth } from "@/context/auth-context";
+import { Button } from "@/components/ui/button";
 
-export default function HomePage() {
+function HomePageContent() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
   });
+  const { user, logout } = useAuth();
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-8 md:p-12">
       <div className="w-full max-w-4xl">
-        <header className="mb-8 flex flex-col items-center gap-4 text-center print:hidden">
-          <Image
-            src="/Logo.svg"
-            alt="Logo de Luprintech"
-            width={150}
-            height={150}
-            className="mx-auto mb-2 rounded-full shadow-lg border border-gray-200"
-            priority
-          />
-          <div className="text-center">
-            <h1 className="font-headline text-4xl font-bold tracking-tighter text-primary sm:text-5xl md:text-6xl">
-              Calculadora de Luprintech
-            </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground">
-              Tu asistente amigable para calcular los costes de impresión 3D con precisión. Sube tu G-code para un análisis instantáneo.
-            </p>
+        <header className="mb-8 flex flex-col items-center gap-4 text-center print:hidden sm:flex-row sm:justify-between">
+          <div className="flex items-center gap-4">
+            <Image
+              src="/Logo.svg"
+              alt="Logo de Luprintech"
+              width={80}
+              height={80}
+              className="rounded-full shadow-lg border border-gray-200"
+              priority
+            />
+            <div className="text-left">
+              <h1 className="font-headline text-3xl font-bold tracking-tighter text-primary sm:text-4xl">
+                Calculadora
+              </h1>
+               <p className="text-sm text-muted-foreground">
+                Bienvenido, {user?.displayName || user?.email}
+              </p>
+            </div>
           </div>
+           <Button onClick={logout} variant="outline">
+              <LogOut className="mr-2 h-4 w-4" />
+              Cerrar Sesión
+            </Button>
         </header>
 
         <CalculatorForm form={form} />
@@ -92,5 +102,13 @@ export default function HomePage() {
         <p>&copy; 2025 Luprintech. Todos los derechos reservados.</p>
       </footer>
     </main>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <ProtectedRoute>
+      <HomePageContent />
+    </ProtectedRoute>
   );
 }

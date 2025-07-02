@@ -5,13 +5,19 @@ import React from 'react';
 import { Github, Youtube, Instagram } from 'lucide-react';
 import { GoogleIcon, TikTokIcon } from '@/components/icons';
 import Image from 'next/image';
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const { user, login } = useAuth();
+  const router = useRouter();
   const currentYear = new Date().getFullYear();
 
-  const handleLogin = () => {
-    console.warn("La funcionalidad de inicio de sesión ha sido eliminada.");
-  };
+  React.useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user, router]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between bg-background p-4 sm:p-8">
@@ -42,15 +48,13 @@ export default function LoginPage() {
 
           <div className="mt-8">
             <Button
-              onClick={handleLogin}
+              onClick={login}
               className="w-full rounded-2xl shadow-md transition-all hover:shadow-lg"
               size="lg"
-              disabled
             >
               <GoogleIcon className="mr-3 h-6 w-6" />
               Iniciar sesión con Google
             </Button>
-             <p className="text-xs text-muted-foreground mt-2">La funcionalidad de inicio de sesión ha sido deshabilitada.</p>
           </div>
         </div>
       </div>
