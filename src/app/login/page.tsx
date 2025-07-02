@@ -21,10 +21,10 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8">
       <div className="w-full max-w-sm text-center">
         <h1 className="font-headline text-4xl font-bold tracking-tighter text-primary sm:text-5xl md:text-6xl">
-          Calculadora de Luprintech
+          Calculadora 3D de Luprintech
         </h1>
-        <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-          Inicia sesión para continuar
+        <p className="mt-4 max-w-md text-lg text-muted-foreground">
+          Calcula al instante el precio de tus impresiones 3D con precisión
         </p>
         <div className="mt-8">
           <Button onClick={login} disabled={loading} className="w-full">
