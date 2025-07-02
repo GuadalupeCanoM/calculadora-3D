@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef } from "react";
@@ -134,37 +135,45 @@ export function CalculatorForm({ form }: { form: UseFormReturn<FormData> }) {
       return;
     }
 
-    const isValid = await form.trigger();
-    if (!isValid) {
-      toast({
-        variant: "destructive",
-        title: "Faltan campos obligatorios",
-        description: "Por favor, completa todos los campos marcados con *.",
-      });
-      return;
-    }
-
     setIsSaving(true);
-    const formData = form.getValues();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, ...dataToSave } = formData;
-    
-    // CRITICAL FIX: Ensure the data is a plain JSON object before sending to the server action.
-    const cleanData = JSON.parse(JSON.stringify(dataToSave));
-
     try {
-      const result = await saveProject(user.uid, cleanData);
+      const isValid = await form.trigger();
+      if (!isValid) {
+        toast({
+          variant: "destructive",
+          title: "Faltan campos obligatorios",
+          description: "Por favor, completa todos los campos marcados con *.",
+        });
+        return;
+      }
+
+      // The form.getValues() can return Proxy objects from react-hook-form,
+      // which are not serializable and break Server Actions.
+      // Using JSON.parse(JSON.stringify(...)) is a robust way to create a "clean"
+      // plain JavaScript object that is safe to send to the server.
+      // This is the definitive fix for the "stuck button" issue.
+      const formData = form.getValues();
+      const dataToSave = JSON.parse(JSON.stringify(formData));
+
+      // We don't want to save the client-side ID.
+      if (dataToSave.id) {
+        delete dataToSave.id;
+      }
+
+      const result = await saveProject(user.uid, dataToSave);
 
       if (result.error) {
         toast({ variant: "destructive", title: "Error al guardar", description: result.error });
       } else {
         toast({ title: "¡Guardado correctamente!" });
+        // After a successful save, reset the form for the next project.
         form.reset(defaultFormValues);
       }
     } catch (err) {
-      console.error("Unexpected error saving project:", err);
+      console.error("Error inesperado al guardar el proyecto:", err);
       toast({ variant: "destructive", title: "Ha ocurrido un error inesperado." });
     } finally {
+      // This block will always run, ensuring the button is never stuck.
       setIsSaving(false);
     }
   };
@@ -650,3 +659,5 @@ Coste de Máquina: ${formatCurrency(calculations.currentMachineCost)}`;
     </TooltipProvider>
   );
 }
+
+    
